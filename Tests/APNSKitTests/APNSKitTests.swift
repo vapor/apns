@@ -1,7 +1,7 @@
 import XCTest
-@testable import apns_kit
+@testable import APSNKit
 
-final class apns_kitTests: XCTestCase {
+final class APNSKitTests: XCTestCase {
     func testExample() {
         // This is an example of a functional test case.
         // Use XCTAssert and related functions to verify your tests produce the correct

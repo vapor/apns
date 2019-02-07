@@ -1,3 +1,3 @@
-# apns-kit
+# APNSKit
 
-A description of this package.
+Helpful extensions and abstractions for using NIOAPNS

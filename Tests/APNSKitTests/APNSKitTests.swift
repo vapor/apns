@@ -1,5 +1,5 @@
 import XCTest
-@testable import APSNKit
+@testable import APNSKit
 
 final class APNSKitTests: XCTestCase {
     func testExample() {

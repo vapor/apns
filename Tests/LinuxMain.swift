@@ -1,7 +1,7 @@
 import XCTest
 
-import apns_kitTests
+import APNSKitTests
 
 var tests = [XCTestCaseEntry]()
-tests += apns_kitTests.allTests()
+tests += APNSKitTests.allTests()
 XCTMain(tests)

@@ -5,6 +5,7 @@ jobs:
     docker:
       - image: codevapor/swift:5.0
     steps:
+      - run: apt-get update; apt-get -y install libnghttp2-dev
       - checkout
       - run: swift build
       - run: swift test
@@ -12,6 +13,7 @@ jobs:
     docker:
       - image: codevapor/swift:5.0
     steps:
+      - run: apt-get update; apt-get -y install libnghttp2-dev
       - checkout
       - run: swift build -c release
 workflows:
@@ -20,3 +22,4 @@ workflows:
     jobs:
       - linux
       - linux-release
+

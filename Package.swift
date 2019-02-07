@@ -1,28 +1,16 @@
 // swift-tools-version:5.0
-// The swift-tools-version declares the minimum version of Swift required to build this package.
-
 import PackageDescription
 
 let package = Package(
     name: "apns-kit",
     products: [
-        // Products define the executables and libraries produced by a package, and make them visible to other packages.
-        .library(
-            name: "apns-kit",
-            targets: ["apns-kit"]),
+        .library(name: "APNSKit", targets: ["APNSKit"]),
     ],
     dependencies: [
-        // Dependencies declare other packages that this package depends on.
-        // .package(url: /* package url */, from: "1.0.0"),
+        .package(url: "https://github.com/kylebrowning/swift-nio-http2-apns.git", .branch("master")),
     ],
     targets: [
-        // Targets are the basic building blocks of a package. A target can define a module or a test suite.
-        // Targets can depend on other targets in this package, and on products in packages which this package depends on.
-        .target(
-            name: "apns-kit",
-            dependencies: []),
-        .testTarget(
-            name: "apns-kitTests",
-            dependencies: ["apns-kit"]),
+        .target(name: "APNSKit", dependencies: ["NIOAPNS"]),
+        .testTarget(name: "APNSKitTests", dependencies: ["APNSKit"]),
     ]
 )

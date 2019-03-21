@@ -8,9 +8,10 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/kylebrowning/swift-nio-http2-apns.git", .branch("master")),
+        .package(url: "https://github.com/vapor/nio-kit.git", .branch("master")),
     ],
     targets: [
-        .target(name: "APNSKit", dependencies: ["NIOAPNS"]),
+        .target(name: "APNSKit", dependencies: ["NIOKit", "NIOAPNS"]),
         .testTarget(name: "APNSKitTests", dependencies: ["APNSKit"]),
     ]
 )

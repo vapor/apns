@@ -1,14 +1,7 @@
-import NIOAPNS
-import NIO
-import NIOKit
-
-public final class APNSKitConnectionManager: ConnectionPoolSource {
+public final class APNSConnectionSource: ConnectionPoolSource {
     public let eventLoop: EventLoop
     private let config: APNSConfiguration
     
-    deinit {
-        // Kill connection
-    }
     public init(config: APNSConfiguration, on eventLoop: EventLoop) {
         self.eventLoop = eventLoop
         self.config = config
@@ -19,6 +12,7 @@ public final class APNSKitConnectionManager: ConnectionPoolSource {
 }
 extension APNSConnection: ConnectionPoolItem {
     public var isClosed: Bool {
+        // TODO: implement this.
         return false
     }
 }

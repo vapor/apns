@@ -3,7 +3,7 @@ version: 2
 jobs:
   linux:
     docker:
-      - image: vapor/swift:5.0
+      - image: swift:5.0
     steps:
       - run: apt-get update; apt-get -y install libnghttp2-dev
       - checkout
@@ -11,7 +11,7 @@ jobs:
       - run: swift test
   linux-release:
     docker:
-      - image: vapor/swift:5.0
+      - image: swift:5.0
     steps:
       - run: apt-get update; apt-get -y install libnghttp2-dev
       - checkout
@@ -22,4 +22,3 @@ workflows:
     jobs:
       - linux
       - linux-release
-

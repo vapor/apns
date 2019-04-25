@@ -1,13 +1,13 @@
 public final class APNSConnectionSource: ConnectionPoolSource {
     public let eventLoop: EventLoop
-    private let config: APNSConfiguration
-    
-    public init(config: APNSConfiguration, on eventLoop: EventLoop) {
+    private let configuration: APNSConfiguration
+
+    public init(configuration: APNSConfiguration, on eventLoop: EventLoop) {
         self.eventLoop = eventLoop
-        self.config = config
+        self.configuration = configuration
     }
     public func makeConnection() -> EventLoopFuture<APNSConnection> {
-        return APNSConnection.connect(configuration: self.config, on: self.eventLoop)
+        return APNSConnection.connect(configuration: self.configuration, on: self.eventLoop)
     }
 }
 extension APNSConnection: ConnectionPoolItem {
@@ -15,9 +15,4 @@ extension APNSConnection: ConnectionPoolItem {
         // TODO: implement this.
         return false
     }
-}
-
-// Delete later when tests are in.
-struct apns_kit {
-    var text = "Hello, World!"
 }

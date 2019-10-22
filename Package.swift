@@ -7,11 +7,11 @@ let package = Package(
         .library(name: "APNSKit", targets: ["APNSKit"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/kylebrowning/swift-nio-apns.git", .branch("master")),
-        .package(url: "https://github.com/vapor/nio-kit.git", .branch("master")),
+        .package(url: "https://github.com/kylebrowning/APNSwift.git", from: "1.3.0"),
+        .package(url: "https://github.com/vapor/async-kit.git", from: "1.0.0-alpha.1"),
     ],
     targets: [
-        .target(name: "APNSKit", dependencies: ["NIOKit", "NIOAPNS"]),
+        .target(name: "APNSKit", dependencies: ["AsyncKit", "APNSwift"]),
         .testTarget(name: "APNSKitTests", dependencies: ["APNSKit"]),
     ]
 )

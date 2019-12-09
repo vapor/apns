@@ -1,3 +1,3 @@
-# APNSKit
+# APNS
 
-Helpful extensions and abstractions for using NIOAPNS
+Helpful extensions and abstractions for using [`APNSwift`](http://github.com/kylebrowning/APNSwift.git)

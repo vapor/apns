@@ -10,8 +10,8 @@ let package = Package(
         .library(name: "APNS", targets: ["APNS"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/kylebrowning/APNSwift.git", .branch("master")),
-        .package(url: "https://github.com/vapor/vapor.git", .branch("master")),
+        .package(url: "https://github.com/kylebrowning/APNSwift.git", from: "1.7.0"),
+        .package(url: "https://github.com/vapor/vapor.git", from: "4.0.0-beta.2"),
     ],
     targets: [
         .target(name: "APNS", dependencies: ["APNSwift", "Vapor"]),

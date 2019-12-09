@@ -9,7 +9,7 @@ class APNSTests: XCTestCase {
         try app.apns.configure(.init(
             keyIdentifier: "9UC9ZLQ8YW",
             teamIdentifier: "ABBM6U9RM5",
-            signer: .init(filePath: "/Users/tanner/Desktop/AuthKey_9UC9ZLQ8YW.p8"),
+            signer: .init(buffer: ByteBufferAllocator().buffer(capacity: 1024)),
             topic: "com.grasscove.Fern",
             environment: .sandbox
         ))
@@ -22,7 +22,7 @@ class APNSTests: XCTestCase {
         }
 
         try app.test(.GET, "test-push") { res in
-            XCTAssertEqual(res.status, .ok)
+            XCTAssertEqual(res.status, .internalServerError)
         }
     }
 }

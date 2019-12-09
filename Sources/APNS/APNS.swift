@@ -64,7 +64,6 @@ extension Request {
     public struct APNS {
         let request: Request
 
-
         public func send(
             _ alert: APNSwiftPayload.APNSwiftAlert,
             pushType: APNSwiftConnection.PushType = .alert,
@@ -90,7 +89,6 @@ extension Request {
         ) -> EventLoopFuture<Void> {
             self.send(BasicNotification(aps: payload), pushType: pushType, to: deviceToken, with: encoder, expiration: expiration, priority: priority, collapseIdentifier: collapseIdentifier, topic: topic)
         }
-
 
         public func send<Notification>(
             _ notification: Notification,

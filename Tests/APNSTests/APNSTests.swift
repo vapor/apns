@@ -6,13 +6,13 @@ class APNSTests: XCTestCase {
         let app = Application(.testing)
         defer { app.shutdown() }
 
-        try app.apns.configure(.init(
+        app.apns.configuration = try .init(
             keyIdentifier: "9UC9ZLQ8YW",
             teamIdentifier: "ABBM6U9RM5",
             signer: .init(buffer: ByteBufferAllocator().buffer(capacity: 1024)),
             topic: "com.grasscove.Fern",
             environment: .sandbox
-        ))
+        )
 
         app.get("test-push") { req -> EventLoopFuture<HTTPStatus> in
             req.apns.send(

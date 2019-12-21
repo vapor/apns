@@ -46,36 +46,6 @@ extension Request.APNS: APNSwiftClient {
         }
     }
 
-    public func send(
-        rawBytes payload: ByteBuffer,
-        pushType: APNSwiftConnection.PushType,
-        to deviceTokens: [String],
-        expiration: Date?,
-        priority: Int?,
-        collapseIdentifier: String?,
-        topic: String?,
-        logger: Logger?
-    ) -> EventLoopFuture<Void> {
-        self.request.application.apns.pool.withConnection(
-            logger: logger,
-            on: self.eventLoop
-        ) { conn in
-            deviceTokens.map { deviceToken in
-                conn.send(
-                    rawBytes: payload,
-                    pushType: pushType,
-                    to: deviceToken,
-                    expiration: expiration,
-                    priority: priority,
-                    collapseIdentifier: collapseIdentifier,
-                    topic: topic,
-                    logger: logger
-                )
-            }
-            .flatten(on: self.request.eventLoop)
-        }
-    }
-
     public func send<T: Collection>(
         rawData payload: T,
         pushType: APNSwiftConnection.PushType,
@@ -91,24 +61,4 @@ extension Request.APNS: APNSwiftClient {
 
         return send(rawBytes: rawBytes, pushType: pushType, to: deviceToken, expiration: expiration, priority: priority, collapseIdentifier: collapseIdentifier, topic: topic, logger: logger)
     }
-
-    public func send<T: Collection>(
-        rawData payload: T,
-        pushType: APNSwiftConnection.PushType,
-        to deviceTokens: [String],
-        expiration: Date?,
-        priority: Int?,
-        collapseIdentifier: String?,
-        topic: String?,
-        logger: Logger?
-    ) -> EventLoopFuture<Void> where T.Element == UInt8 {
-        var rawBytes = ByteBufferAllocator().buffer(capacity: payload.count)
-        rawBytes.writeBytes(payload)
-
-        return deviceTokens.map {
-            send(rawBytes: rawBytes, pushType: pushType, to: $0, expiration: expiration, priority: priority, collapseIdentifier: collapseIdentifier, topic: topic, logger: logger)
-        }
-        .flatten(on: request.eventLoop)
-    }
-
 }

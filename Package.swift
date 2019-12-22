@@ -7,14 +7,14 @@ let package = Package(
        .macOS(.v10_14)
     ],
     products: [
-        .library(name: "APNS", targets: ["APNS"]),
+        .library(name: "APNs", targets: ["APNs"]),
     ],
     dependencies: [
         .package(url: "https://github.com/kylebrowning/APNSwift.git", from: "1.7.0"),
         .package(url: "https://github.com/vapor/vapor.git", from: "4.0.0-beta.2.1"),
     ],
     targets: [
-        .target(name: "APNS", dependencies: ["APNSwift", "Vapor"]),
-        .testTarget(name: "APNSTests", dependencies: ["APNS", "XCTVapor"]),
+        .target(name: "APNs", dependencies: ["APNSwift", "Vapor"]),
+        .testTarget(name: "APNsTests", dependencies: ["APNs", "XCTVapor"]),
     ]
 )

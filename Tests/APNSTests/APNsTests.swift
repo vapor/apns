@@ -1,7 +1,7 @@
-import APNS
+import APNs
 import XCTVapor
 
-class APNSTests: XCTestCase {
+class APNsTests: XCTestCase {
     func testApplication() throws {
         let app = Application(.testing)
         defer { app.shutdown() }

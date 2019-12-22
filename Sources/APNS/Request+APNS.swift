@@ -1,16 +1,16 @@
 import Vapor
 
 extension Request {
-    public var apns: APNS {
+    public var apns: APNs {
         .init(request: self)
     }
 
-    public struct APNS {
+    public struct APNs {
         let request: Request
     }
 }
 
-extension Request.APNS: APNSwiftClient {
+extension Request.APNs: APNSwiftClient {
     public var logger: Logger? {
         self.request.logger
     }

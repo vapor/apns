@@ -1,11 +1,11 @@
 import Vapor
 
 extension Application {
-    public var apns: APNS {
+    public var apns: APNs {
         .init(application: self)
     }
 
-    public struct APNS {
+    public struct APNs {
         struct ConfigurationKey: StorageKey {
             typealias Value = APNSwiftConfiguration
         }
@@ -21,10 +21,10 @@ extension Application {
 
 
         struct PoolKey: StorageKey, LockKey {
-            typealias Value = EventLoopGroupConnectionPool<APNSConnectionSource>
+            typealias Value = EventLoopGroupConnectionPool<APNsConnectionSource>
         }
 
-        internal var pool: EventLoopGroupConnectionPool<APNSConnectionSource> {
+        internal var pool: EventLoopGroupConnectionPool<APNsConnectionSource> {
             if let existing = self.application.storage[PoolKey.self] {
                 return existing
             } else {
@@ -32,10 +32,10 @@ extension Application {
                 lock.lock()
                 defer { lock.unlock() }
                 guard let configuration = self.configuration else {
-                    fatalError("APNS not configured. Use app.apns.configuration = ...")
+                    fatalError("APNs not configured. Use app.apns.configuration = ...")
                 }
                 let new = EventLoopGroupConnectionPool(
-                    source: APNSConnectionSource(configuration: configuration),
+                    source: APNsConnectionSource(configuration: configuration),
                     maxConnectionsPerEventLoop: 1,
                     logger: self.application.logger,
                     on: self.application.eventLoopGroup

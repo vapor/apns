@@ -1,7 +1,7 @@
 import AsyncKit
 import Logging
 
-public final class APNSConnectionSource: ConnectionPoolSource {
+public final class APNsConnectionSource: ConnectionPoolSource {
     private let configuration: APNSwiftConfiguration
 
     public init(configuration: APNSwiftConfiguration) {

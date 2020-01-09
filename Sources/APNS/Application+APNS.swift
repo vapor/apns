@@ -50,3 +50,40 @@ extension Application {
         let application: Application
     }
 }
+
+extension Application.APNS: APNSwiftClient {
+    public var logger: Logger? {
+        self.application.logger
+    }
+
+    public var eventLoop: EventLoop {
+        self.application.eventLoopGroup.next()
+    }
+
+    public func send(
+        rawBytes payload: ByteBuffer,
+        pushType: APNSwiftConnection.PushType,
+        to deviceToken: String,
+        expiration: Date?,
+        priority: Int?,
+        collapseIdentifier: String?,
+        topic: String?,
+        logger: Logger?
+    ) -> EventLoopFuture<Void> {
+        self.application.apns.pool.withConnection(
+            logger: logger,
+            on: self.eventLoop
+        ) {
+            $0.send(
+                rawBytes: payload,
+                pushType: pushType,
+                to: deviceToken,
+                expiration: expiration,
+                priority: priority,
+                collapseIdentifier: collapseIdentifier,
+                topic: topic,
+                logger: logger
+            )
+        }
+    }
+}

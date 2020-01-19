@@ -21,6 +21,6 @@ extension APNSwiftConnection: ConnectionPoolItem {
     }
 
     public var isClosed: Bool {
-        self.channel.isActive
+        !self.channel.isActive
     }
 }

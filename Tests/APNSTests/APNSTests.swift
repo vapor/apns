@@ -7,9 +7,11 @@ class APNSTests: XCTestCase {
         defer { app.shutdown() }
 
         app.apns.configuration = try .init(
-            keyIdentifier: "9UC9ZLQ8YW",
-            teamIdentifier: "ABBM6U9RM5",
-            signer: .init(buffer: ByteBufferAllocator().buffer(capacity: 1024)),
+            authenticationMethod: .jwt(
+                key: .private(filePath: "/Users/kylebrowning/Desktop/AuthKey_9UC9ZLQ8YW.p8"),
+                keyIdentifier: "9UC9ZLQ8YW",
+                teamIdentifier: "ABBM6U9RM5"
+            ),
             topic: "com.grasscove.Fern",
             environment: .sandbox
         )

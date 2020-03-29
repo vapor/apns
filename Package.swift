@@ -14,7 +14,11 @@ let package = Package(
         .package(url: "https://github.com/vapor/vapor.git", from: "4.0.0-rc.3"),
     ],
     targets: [
-        .target(name: "APNS", dependencies: ["APNSwift", "Vapor"]),
-        .testTarget(name: "APNSTests", dependencies: ["APNS", "XCTVapor"]),
+        .target(name: "APNS", dependencies: [
+            .product(name: "Vapor", package: "vapor"),
+        ]),
+        .testTarget(name: "APNSTests", dependencies: [
+            .target(name: "APNS"),
+        ]),
     ]
 )

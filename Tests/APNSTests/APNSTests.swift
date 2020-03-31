@@ -2,15 +2,26 @@ import APNS
 import XCTVapor
 
 class APNSTests: XCTestCase {
+    let appleECP8PrivateKey = """
+    -----BEGIN PRIVATE KEY-----
+    MIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQg2sD+kukkA8GZUpmm
+    jRa4fJ9Xa/JnIG4Hpi7tNO66+OGgCgYIKoZIzj0DAQehRANCAATZp0yt0btpR9kf
+    ntp4oUUzTV0+eTELXxJxFvhnqmgwGAm1iVW132XLrdRG/ntlbQ1yzUuJkHtYBNve
+    y+77Vzsd
+    -----END PRIVATE KEY-----
+    """
+
     func testApplication() throws {
         let app = Application(.testing)
         defer { app.shutdown() }
 
         app.apns.configuration = try .init(
-            keyIdentifier: "9UC9ZLQ8YW",
-            teamIdentifier: "ABBM6U9RM5",
-            signer: .init(buffer: ByteBufferAllocator().buffer(capacity: 1024)),
-            topic: "com.grasscove.Fern",
+            authenticationMethod: .jwt(
+                key: .private(pem: Data(appleECP8PrivateKey.utf8)),
+                keyIdentifier: "MY_KEY_ID",
+                teamIdentifier: "MY_TEAM_ID"
+            ),
+            topic: "MY_TOPIC",
             environment: .sandbox
         )
 
@@ -26,3 +37,4 @@ class APNSTests: XCTestCase {
         }
     }
 }
+

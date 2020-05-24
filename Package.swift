@@ -11,7 +11,7 @@ let package = Package(
     ],
     dependencies: [
         .package(name: "apnswift", url: "https://github.com/kylebrowning/APNSwift.git", from: "2.0.0-rc"),
-        .package(name: "vapor", url: "https://github.com/vapor/vapor.git", from: "4.0.0-rc"),
+        .package(name: "vapor", url: "https://github.com/vapor/vapor.git", from: "4.0.0"),
     ],
     targets: [
         .target(name: "APNS", dependencies: [

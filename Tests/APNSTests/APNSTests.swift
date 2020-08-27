@@ -17,7 +17,7 @@ class APNSTests: XCTestCase {
 
         app.apns.configuration = try .init(
             authenticationMethod: .jwt(
-                key: .private(pem: Data(appleECP8PrivateKey.utf8)),
+                key: .private(pem: appleECP8PrivateKey),
                 keyIdentifier: "MY_KEY_ID",
                 teamIdentifier: "MY_TEAM_ID"
             ),

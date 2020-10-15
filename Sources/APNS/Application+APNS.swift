@@ -1,8 +1,9 @@
 import Vapor
+import struct NIO.TimeAmount
 
 extension Application {
     public var apns: APNS {
-        .init(application: self)
+        .init(application: self, customTimeout:.seconds(5))
     }
 
     public struct APNS {
@@ -18,7 +19,6 @@ extension Application {
                 self.application.storage[ConfigurationKey.self] = newValue
             }
         }
-
 
         struct PoolKey: StorageKey, LockKey {
             typealias Value = EventLoopGroupConnectionPool<APNSConnectionSource>
@@ -37,6 +37,7 @@ extension Application {
                 let new = EventLoopGroupConnectionPool(
                     source: APNSConnectionSource(configuration: configuration),
                     maxConnectionsPerEventLoop: 1,
+                    requestTimeout: customTimeout,
                     logger: self.application.logger,
                     on: self.application.eventLoopGroup
                 )
@@ -48,6 +49,8 @@ extension Application {
         }
 
         let application: Application
+        let customTimeout: TimeAmount
+    
     }
 }
 

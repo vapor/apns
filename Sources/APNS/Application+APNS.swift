@@ -3,10 +3,28 @@ import struct NIO.TimeAmount
 
 extension Application {
     public var apns: APNS {
-        .init(application: self, customTimeout:.seconds(5))
+        .init(application: self)
     }
 
     public struct APNS {
+        
+        struct TimeoutKey: StorageKey {
+            typealias Value = TimeAmount
+        }
+        
+        public var customTimeout: TimeAmount {
+            get {
+                var defaultTimeOut:TimeAmount = .seconds(5)
+                if let timeout = self.application.storage[TimeoutKey.self]{
+                    defaultTimeOut = timeout
+                }
+                return defaultTimeOut
+            }
+            nonmutating set {
+                self.application.storage[TimeoutKey.self] = newValue
+            }
+        }
+        
         struct ConfigurationKey: StorageKey {
             typealias Value = APNSwiftConfiguration
         }
@@ -49,7 +67,6 @@ extension Application {
         }
 
         let application: Application
-        let customTimeout: TimeAmount
     
     }
 }

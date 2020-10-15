@@ -1,4 +1,5 @@
 import APNS
+import struct NIO.TimeAmount
 import XCTVapor
 
 class APNSTests: XCTestCase {
@@ -14,7 +15,8 @@ class APNSTests: XCTestCase {
     func testApplication() throws {
         let app = Application(.testing)
         defer { app.shutdown() }
-
+        
+        app.apns.customTimeout = .seconds(2)
         app.apns.configuration = try .init(
             authenticationMethod: .jwt(
                 key: .private(pem: appleECP8PrivateKey),
@@ -35,6 +37,15 @@ class APNSTests: XCTestCase {
         try app.test(.GET, "test-push") { res in
             XCTAssertEqual(res.status, .internalServerError)
         }
+    }
+    
+    func testCustomTimeout() throws {
+        let app = Application(.testing)
+        defer { app.shutdown() }
+        
+        XCTAssertEqual(app.apns.customTimeout, .seconds(5))
+        app.apns.customTimeout = .seconds(2)
+        XCTAssertEqual(app.apns.customTimeout, .seconds(2))
     }
 }
 

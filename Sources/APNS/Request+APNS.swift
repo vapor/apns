@@ -27,7 +27,8 @@ extension Request.APNS: APNSwiftClient {
         priority: Int?,
         collapseIdentifier: String?,
         topic: String?,
-        logger: Logger?
+        logger: Logger?,
+        apnsID: UUID?
     ) -> EventLoopFuture<Void> {
         self.request.application.apns.pool.withConnection(
             logger: logger,
@@ -41,7 +42,8 @@ extension Request.APNS: APNSwiftClient {
                 priority: priority,
                 collapseIdentifier: collapseIdentifier,
                 topic: topic,
-                logger: logger
+                logger: logger,
+                apnsID: apnsID
             )
         }
     }

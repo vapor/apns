@@ -15,7 +15,7 @@ extension Application {
         public var customTimeout: TimeAmount {
             get {
                 var defaultTimeOut:TimeAmount = .seconds(5)
-                if let timeout = self.application.storage[TimeoutKey.self]{
+                if let timeout = self.application.storage[TimeoutKey.self] {
                     defaultTimeOut = timeout
                 }
                 return defaultTimeOut

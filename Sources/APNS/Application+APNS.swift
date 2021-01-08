@@ -69,7 +69,7 @@ extension Application.APNS: APNSwiftClient {
         collapseIdentifier: String?,
         topic: String?,
         logger: Logger?,
-        apnsID: UUID?
+        apnsID: UUID? = nil
     ) -> EventLoopFuture<Void> {
         self.application.apns.pool.withConnection(
             logger: logger,

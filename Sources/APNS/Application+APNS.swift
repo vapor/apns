@@ -24,7 +24,7 @@ extension Application {
             typealias Value = EventLoopGroupConnectionPool<APNSConnectionSource>
         }
 
-        internal var pool: EventLoopGroupConnectionPool<APNSConnectionSource> {
+        public var pool: EventLoopGroupConnectionPool<APNSConnectionSource> {
             if let existing = self.application.storage[PoolKey.self] {
                 return existing
             } else {

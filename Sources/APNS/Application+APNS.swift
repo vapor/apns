@@ -2,90 +2,48 @@ import Vapor
 
 extension Application {
     public var apns: APNS {
-        .init(application: self)
+        .init(application: self,
+              eventLoop: eventLoopGroup.next(),
+              logger: logger)
     }
 
-    public struct APNS {
-        struct ConfigurationKey: StorageKey {
-            typealias Value = APNSwiftConfiguration
-        }
+    private struct ConfigurationKey: StorageKey {
+        typealias Value = APNSwiftConfiguration
+    }
 
-        public var configuration: APNSwiftConfiguration? {
-            get {
-                self.application.storage[ConfigurationKey.self]
+    public var apnsConfiguration: APNSwiftConfiguration? {
+        get {
+            storage[ConfigurationKey.self]
+        }
+        set {
+            storage[ConfigurationKey.self] = newValue
+        }
+    }
+
+    private struct PoolKey: StorageKey, LockKey {
+        typealias Value = EventLoopGroupConnectionPool<APNSConnectionSource>
+    }
+
+    public var apnsPool: EventLoopGroupConnectionPool<APNSConnectionSource> {
+        if let existing = storage[PoolKey.self] {
+            return existing
+        } else {
+            let lock = locks.lock(for: PoolKey.self)
+            lock.lock()
+            defer { lock.unlock() }
+            guard let configuration = apnsConfiguration else {
+                fatalError("APNS not configured. Use app.apnsConfiguration = ...")
             }
-            nonmutating set {
-                self.application.storage[ConfigurationKey.self] = newValue
-            }
-        }
-
-
-        struct PoolKey: StorageKey, LockKey {
-            typealias Value = EventLoopGroupConnectionPool<APNSConnectionSource>
-        }
-
-        public var pool: EventLoopGroupConnectionPool<APNSConnectionSource> {
-            if let existing = self.application.storage[PoolKey.self] {
-                return existing
-            } else {
-                let lock = self.application.locks.lock(for: PoolKey.self)
-                lock.lock()
-                defer { lock.unlock() }
-                guard let configuration = self.configuration else {
-                    fatalError("APNS not configured. Use app.apns.configuration = ...")
-                }
-                let new = EventLoopGroupConnectionPool(
-                    source: APNSConnectionSource(configuration: configuration),
-                    maxConnectionsPerEventLoop: 1,
-                    logger: self.application.logger,
-                    on: self.application.eventLoopGroup
-                )
-                self.application.storage.set(PoolKey.self, to: new) {
-                    $0.shutdown()
-                }
-                return new
-            }
-        }
-
-        let application: Application
-    }
-}
-
-extension Application.APNS: APNSwiftClient {
-    public var logger: Logger? {
-        self.application.logger
-    }
-
-    public var eventLoop: EventLoop {
-        self.application.eventLoopGroup.next()
-    }
-
-    public func send(
-        rawBytes payload: ByteBuffer,
-        pushType: APNSwiftConnection.PushType,
-        to deviceToken: String,
-        expiration: Date?,
-        priority: Int?,
-        collapseIdentifier: String?,
-        topic: String?,
-        logger: Logger?,
-        apnsID: UUID? = nil
-    ) -> EventLoopFuture<Void> {
-        self.application.apns.pool.withConnection(
-            logger: logger,
-            on: self.eventLoop
-        ) {
-            $0.send(
-                rawBytes: payload,
-                pushType: pushType,
-                to: deviceToken,
-                expiration: expiration,
-                priority: priority,
-                collapseIdentifier: collapseIdentifier,
-                topic: topic,
+            let new = EventLoopGroupConnectionPool(
+                source: APNSConnectionSource(configuration: configuration),
+                maxConnectionsPerEventLoop: 1,
                 logger: logger,
-                apnsID: apnsID
+                on: eventLoopGroup
             )
+            storage.set(PoolKey.self, to: new) {
+                $0.shutdown()
+            }
+            return new
         }
     }
 }

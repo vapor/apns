@@ -15,7 +15,7 @@ class APNSTests: XCTestCase {
         let app = Application(.testing)
         defer { app.shutdown() }
 
-        app.apns.configuration = try .init(
+        app.apnsConfiguration = try .init(
             authenticationMethod: .jwt(
                 key: .private(pem: appleECP8PrivateKey),
                 keyIdentifier: "MY_KEY_ID",

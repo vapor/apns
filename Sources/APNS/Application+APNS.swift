@@ -19,7 +19,6 @@ extension Application {
             }
         }
 
-
         struct PoolKey: StorageKey, LockKey {
             typealias Value = EventLoopGroupConnectionPool<APNSConnectionSource>
         }
@@ -58,6 +57,52 @@ extension Application.APNS: APNSwiftClient {
 
     public var eventLoop: EventLoop {
         self.application.eventLoopGroup.next()
+    }
+
+    public func batchSend(
+        rawBytes payload: ByteBuffer,
+        pushType: APNSwiftConnection.PushType,
+        to deviceToken: String...,
+        expiration: Date?,
+        priority: Int?,
+        collapseIdentifier: String?,
+        topic: String?,
+        logger: Logger?,
+        apnsID: UUID? = nil)
+    -> EventLoopFuture<Void> {
+        batchSend(rawBytes: payload,
+                  pushType: pushType,
+                  to: deviceToken,
+                  expiration: expiration,
+                  priority: priority,
+                  collapseIdentifier: collapseIdentifier,
+                  topic: topic,
+                  logger: logger,
+                  apnsID: apnsID)
+    }
+
+    public func batchSend(
+        rawBytes payload: ByteBuffer,
+        pushType: APNSwiftConnection.PushType,
+        to deviceToken: [String],
+        expiration: Date?,
+        priority: Int?,
+        collapseIdentifier: String?,
+        topic: String?,
+        logger: Logger?,
+        apnsID: UUID? = nil)
+    -> EventLoopFuture<Void> {
+        deviceToken.map {
+            send(rawBytes: payload,
+                 pushType: pushType,
+                 to: $0,
+                 expiration: expiration,
+                 priority: priority,
+                 collapseIdentifier: collapseIdentifier,
+                 topic: topic,
+                 logger: logger,
+                 apnsID: apnsID)
+        }.flatten(on: self.eventLoop)
     }
 
     public func send(

@@ -1,21 +1,58 @@
 import Vapor
 
+extension Application.APNS {
+    
+    public struct ConfigID: Hashable, Codable {
+        
+        public let string: String
+        
+        public init(string: String) {
+            self.string = string
+        }
+    }
+}
+extension Application.APNS.ConfigID: ExpressibleByStringLiteral {
+    
+    public init(stringLiteral value: StringLiteralType) {
+        self.init(string: value)
+    }
+}
+
 extension Application {
+    
     public var apns: APNS {
         .init(application: self)
     }
 
     public struct APNS {
-        struct ConfigurationKey: StorageKey {
-            typealias Value = APNSwiftConfiguration
+        
+        struct ConfigurationsKey: StorageKey, LockKey {
+            typealias Value = APNSConfigurations
+        }
+
+        public var configurations: APNSConfigurations {
+            if let existing = self.application.storage[ConfigurationsKey.self] {
+                return existing
+            } else {
+                let lock = self.application.locks.lock(for: ConfigurationsKey.self)
+                lock.lock()
+                defer { lock.unlock() }
+                let new = APNSConfigurations()
+                self.application.storage.set(ConfigurationsKey.self, to: new) {
+                    $0.shutdown()
+                }
+                return new
+            }
         }
 
         public var configuration: APNSwiftConfiguration? {
             get {
-                self.application.storage[ConfigurationKey.self]
+                self.configurations.configuration()
             }
             nonmutating set {
-                self.application.storage[ConfigurationKey.self] = newValue
+                if let config = newValue {
+                    self.configurations.use(config, as: "default", isDefault: true)
+                }
             }
         }
 
@@ -23,27 +60,11 @@ extension Application {
             typealias Value = EventLoopGroupConnectionPool<APNSConnectionSource>
         }
 
-        public var pool: EventLoopGroupConnectionPool<APNSConnectionSource> {
-            if let existing = self.application.storage[PoolKey.self] {
-                return existing
-            } else {
-                let lock = self.application.locks.lock(for: PoolKey.self)
-                lock.lock()
-                defer { lock.unlock() }
-                guard let configuration = self.configuration else {
-                    fatalError("APNS not configured. Use app.apns.configuration = ...")
-                }
-                let new = EventLoopGroupConnectionPool(
-                    source: APNSConnectionSource(configuration: configuration),
-                    maxConnectionsPerEventLoop: 1,
-                    logger: self.application.logger,
-                    on: self.application.eventLoopGroup
-                )
-                self.application.storage.set(PoolKey.self, to: new) {
-                    $0.shutdown()
-                }
-                return new
-            }
+        public func pool(for configID: Application.APNS.ConfigID? = nil) -> EventLoopGroupConnectionPool<APNSConnectionSource> {
+            return self.configurations.pool(
+                for: configID,
+                logger: self.application.logger,
+                on: self.application.eventLoopGroup)
         }
 
         let application: Application
@@ -68,8 +89,9 @@ extension Application.APNS: APNSwiftClient {
         collapseIdentifier: String?,
         topic: String?,
         logger: Logger?,
-        apnsID: UUID? = nil)
-    -> EventLoopFuture<Void> {
+        apnsID: UUID? = nil,
+        for configID: Application.APNS.ConfigID? = nil
+    ) -> EventLoopFuture<Void> {
         batchSend(rawBytes: payload,
                   pushType: pushType,
                   to: deviceToken,
@@ -78,7 +100,8 @@ extension Application.APNS: APNSwiftClient {
                   collapseIdentifier: collapseIdentifier,
                   topic: topic,
                   logger: logger,
-                  apnsID: apnsID)
+                  apnsID: apnsID,
+                  for: configID)
     }
 
     public func batchSend(
@@ -90,8 +113,9 @@ extension Application.APNS: APNSwiftClient {
         collapseIdentifier: String?,
         topic: String?,
         logger: Logger?,
-        apnsID: UUID? = nil)
-    -> EventLoopFuture<Void> {
+        apnsID: UUID? = nil,
+        for configID: Application.APNS.ConfigID? = nil
+    ) -> EventLoopFuture<Void> {
         deviceToken.map {
             send(rawBytes: payload,
                  pushType: pushType,
@@ -101,7 +125,8 @@ extension Application.APNS: APNSwiftClient {
                  collapseIdentifier: collapseIdentifier,
                  topic: topic,
                  logger: logger,
-                 apnsID: apnsID)
+                 apnsID: apnsID,
+                 for: configID)
         }.flatten(on: self.eventLoop)
     }
 
@@ -114,9 +139,10 @@ extension Application.APNS: APNSwiftClient {
         collapseIdentifier: String?,
         topic: String?,
         logger: Logger?,
-        apnsID: UUID? = nil
+        apnsID: UUID? = nil,
+        for configID: Application.APNS.ConfigID? = nil
     ) -> EventLoopFuture<Void> {
-        self.application.apns.pool.withConnection(
+        self.application.apns.pool(for: configID).withConnection(
             logger: logger,
             on: self.eventLoop
         ) {

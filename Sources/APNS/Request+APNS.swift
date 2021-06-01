@@ -28,9 +28,10 @@ extension Request.APNS: APNSwiftClient {
         collapseIdentifier: String?,
         topic: String?,
         logger: Logger?,
-        apnsID: UUID? = nil
+        apnsID: UUID? = nil,
+        for configID: Application.APNS.ConfigID? = nil
     ) -> EventLoopFuture<Void> {
-        self.request.application.apns.pool.withConnection(
+        self.request.application.apns.pool(for: configID).withConnection(
             logger: logger,
             on: self.eventLoop
         ) {

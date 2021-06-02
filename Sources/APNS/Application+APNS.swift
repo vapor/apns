@@ -59,7 +59,12 @@ extension Application {
         struct PoolKey: StorageKey, LockKey {
             typealias Value = EventLoopGroupConnectionPool<APNSConnectionSource>
         }
-
+        
+        public var pool: EventLoopGroupConnectionPool<APNSConnectionSource> {
+            return self.configurations.pool(logger: self.application.logger,
+                                            on: self.application.eventLoopGroup)
+        }
+        
         public func pool(for configID: Application.APNS.ConfigID? = nil) -> EventLoopGroupConnectionPool<APNSConnectionSource> {
             return self.configurations.pool(
                 for: configID,

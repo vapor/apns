@@ -59,7 +59,10 @@ extension APNSConfigurations {
     public func configuration(for id: Application.APNS.ConfigID? = nil) -> APNSwiftConfiguration? {
         self.lock.lock()
         defer { self.lock.unlock() }
-        return self.configurations[id ?? self._requireDefaultID()]
+        guard let id = id ?? self.defaultID else {
+            return nil
+        }
+        return self.configurations[id]
     }
 }
 

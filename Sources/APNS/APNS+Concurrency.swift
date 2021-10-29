@@ -13,7 +13,8 @@ extension Application.APNS {
         collapseIdentifier: String?,
         topic: String?,
         logger: Logger?,
-        apnsID: UUID? = nil)
+        apnsID: UUID? = nil,
+        for configID: Application.APNS.ConfigID? = nil)
     async throws {
         try await batchSend(
             rawBytes: payload,
@@ -24,7 +25,8 @@ extension Application.APNS {
             collapseIdentifier: collapseIdentifier,
             topic: topic,
             logger: logger,
-            apnsID: apnsID)
+            apnsID: apnsID,
+            for: configID)
     }
     
     public func batchSend(
@@ -36,7 +38,8 @@ extension Application.APNS {
         collapseIdentifier: String?,
         topic: String?,
         logger: Logger?,
-        apnsID: UUID? = nil)
+        apnsID: UUID? = nil,
+        for configID: Application.APNS.ConfigID? = nil)
     async throws {
         try await batchSend(
             rawBytes: payload,
@@ -47,7 +50,8 @@ extension Application.APNS {
             collapseIdentifier: collapseIdentifier,
             topic: topic,
             logger: logger,
-            apnsID: apnsID).get()
+            apnsID: apnsID,
+            for: configID).get()
     }
     
     public func send(
@@ -59,9 +63,10 @@ extension Application.APNS {
         collapseIdentifier: String?,
         topic: String?,
         logger: Logger?,
-        apnsID: UUID? = nil
+        apnsID: UUID? = nil,
+        for configID: Application.APNS.ConfigID? = nil
     ) async throws {
-        try await self.send(rawBytes: payload, pushType: pushType, to: deviceToken, expiration: expiration, priority: priority, collapseIdentifier: collapseIdentifier, topic: topic, logger: logger, apnsID: apnsID).get()
+        try await self.send(rawBytes: payload, pushType: pushType, to: deviceToken, expiration: expiration, priority: priority, collapseIdentifier: collapseIdentifier, topic: topic, logger: logger, apnsID: apnsID, for: configID).get()
     }
 }
 
@@ -76,9 +81,10 @@ extension Request.APNS {
         collapseIdentifier: String?,
         topic: String?,
         logger: Logger?,
-        apnsID: UUID? = nil
+        apnsID: UUID? = nil,
+        for configID: Application.APNS.ConfigID? = nil
     ) async throws {
-        try await send(rawBytes: payload, pushType: pushType, to: deviceToken, expiration: expiration, priority: priority, collapseIdentifier: collapseIdentifier, topic: topic, logger: logger, apnsID: apnsID).get()
+        try await send(rawBytes: payload, pushType: pushType, to: deviceToken, expiration: expiration, priority: priority, collapseIdentifier: collapseIdentifier, topic: topic, logger: logger, apnsID: apnsID, for: configID).get()
     }
 }
 

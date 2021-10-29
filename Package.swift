@@ -12,11 +12,13 @@ let package = Package(
     dependencies: [
         .package(name: "apnswift", url: "https://github.com/kylebrowning/APNSwift.git", from: "3.0.0"),
         .package(name: "vapor", url: "https://github.com/vapor/vapor.git", from: "4.0.0"),
+        .package(url: "https://github.com/apple/swift-nio.git", from: "2.33.0"),
     ],
     targets: [
         .target(name: "APNS", dependencies: [
             .product(name: "APNSwift", package: "apnswift"),
             .product(name: "Vapor", package: "vapor"),
+            .product(name: "NIOCore", package: "swift-nio")
         ]),
         .testTarget(name: "APNSTests", dependencies: [
             .target(name: "APNS"),

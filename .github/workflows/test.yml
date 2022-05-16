@@ -3,25 +3,10 @@ on:
   pull_request:
   push:
     branches:
-    - master
+    - main
 jobs:
-  linux:
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        image:
-          # 5.2 Stable
-          - swift:5.2
-          - swift:5.3
-          - swift:5.4
-          - swift:5.5
-    container: ${{ matrix.image }}
-    steps:
-    - uses: actions/checkout@v2
-    - run: swift test --enable-test-discovery --sanitize=thread
-  macOS:
-    runs-on: macos-latest
-    steps:
-    - uses: actions/checkout@v2
-    - run: swift test --enable-test-discovery --sanitize=thread
+  unit-tests:
+     uses: vapor/ci/.github/workflows/run-unit-tests.yml@reusable-workflows
+     with:
+       with_coverage: false
+       with_tsan: true

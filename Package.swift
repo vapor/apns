@@ -1,17 +1,18 @@
-// swift-tools-version:5.4
+// swift-tools-version:5.6
 import PackageDescription
 
 let package = Package(
     name: "apns",
     platforms: [
-       .macOS(.v10_15)
+       .macOS(.v12),
+       .iOS(.v15)
     ],
     products: [
         .library(name: "APNS", targets: ["APNS"]),
     ],
     dependencies: [
-        .package(name: "apnswift", url: "https://github.com/swift-server-community/APNSwift.git", from: "4.0.0"),
-        .package(name: "vapor", url: "https://github.com/vapor/vapor.git", from: "4.0.0"),
+        .package(url: "https://github.com/swift-server-community/APNSwift.git", branch: "ahc-async"),
+        .package(url: "https://github.com/vapor/vapor.git", from: "4.0.0"),
         .package(url: "https://github.com/apple/swift-nio.git", from: "2.33.0"),
     ],
     targets: [

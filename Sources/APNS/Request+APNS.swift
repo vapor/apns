@@ -15,36 +15,57 @@ extension Request.APNS: APNSwiftClient {
         self.request.logger
     }
 
-    public var eventLoop: EventLoop {
-        self.request.eventLoop
-    }
-
-    public func send(
+    public func batchSend(
         rawBytes payload: ByteBuffer,
         pushType: APNSwiftConnection.PushType,
-        to deviceToken: String,
+        to deviceToken: String...,
+        on environment: APNSwift.APNSwiftConfiguration.Environment? = nil,
         expiration: Date?,
         priority: Int?,
         collapseIdentifier: String?,
         topic: String?,
         logger: Logger?,
         apnsID: UUID? = nil
-    ) -> EventLoopFuture<Void> {
-        self.request.application.apns.pool.withConnection(
-            logger: logger,
-            on: self.eventLoop
-        ) {
-            $0.send(
+    ) async throws {
+        for token in deviceToken {
+            try await send(
                 rawBytes: payload,
                 pushType: pushType,
-                to: deviceToken,
+                to: token,
+                on: environment,
                 expiration: expiration,
                 priority: priority,
                 collapseIdentifier: collapseIdentifier,
                 topic: topic,
-                logger: logger,
+                logger: logger ?? self.logger,
                 apnsID: apnsID
             )
         }
+    }
+
+    public func send(
+        rawBytes payload: NIOCore.ByteBuffer,
+        pushType: APNSwift.APNSwiftConnection.PushType,
+        to deviceToken: String,
+        on environment: APNSwift.APNSwiftConfiguration.Environment? = nil,
+        expiration: Date?,
+        priority: Int?,
+        collapseIdentifier: String?,
+        topic: String?,
+        logger: Logging.Logger?,
+        apnsID: UUID?
+    ) async throws {
+        try await request.application.apns.connection.send(
+            rawBytes: payload,
+            pushType: pushType,
+            to: deviceToken,
+            on: environment,
+            expiration: expiration,
+            priority: priority,
+            collapseIdentifier: collapseIdentifier,
+            topic: topic,
+            logger: logger ?? self.logger,
+            apnsID: apnsID
+        )
     }
 }

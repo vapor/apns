@@ -16,6 +16,7 @@ class APNSTests: XCTestCase {
         defer { app.shutdown() }
 
         app.apns.configuration = try .init(
+            httpClient: app.http.client.shared,
             authenticationMethod: .jwt(
                 key: .private(pem: appleECP8PrivateKey),
                 keyIdentifier: "MY_KEY_ID",
@@ -25,13 +26,13 @@ class APNSTests: XCTestCase {
             environment: .sandbox
         )
 
-        app.get("test-push") { req -> EventLoopFuture<HTTPStatus> in
-            req.apns.send(
+        app.get("test-push") { req -> HTTPStatus in
+            try await req.apns.send(
                 .init(title: "Hello", subtitle: "This is a test from vapor/apns"),
                 to: "98AAD4A2398DDC58595F02FA307DF9A15C18B6111D1B806949549085A8E6A55D"
-            ).map { .ok }
+            )
+            return .ok
         }
-
         try app.test(.GET, "test-push") { res in
             XCTAssertEqual(res.status, .internalServerError)
         }

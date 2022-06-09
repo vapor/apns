@@ -8,7 +8,7 @@ extension Application {
     public struct APNS {
         public var connection: APNSwiftConnection {
             guard let configuration = configuration else {
-                fatalError()
+                fatalError("APNS not configured. Use app.apns.configuration = ...")
             }
             return APNSwiftConnection(configuration: configuration, logger: logger)
         }

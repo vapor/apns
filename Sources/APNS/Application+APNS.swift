@@ -35,7 +35,7 @@ extension Application.APNS: APNSwiftClient {
         rawBytes payload: ByteBuffer,
         pushType: APNSwiftConnection.PushType,
         to deviceToken: String...,
-        on environment: APNSwift.APNSwiftConfiguration.Environment?,
+        on environment: APNSwift.APNSwiftConfiguration.Environment? = nil,
         expiration: Date?,
         priority: Int?,
         collapseIdentifier: String?,

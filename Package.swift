@@ -11,15 +11,13 @@ let package = Package(
         .library(name: "APNS", targets: ["APNS"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/swift-server-community/APNSwift.git", branch: "ahc-async"),
+        .package(url: "https://github.com/swift-server-community/APNSwift.git", from: "5.0.0-alpha.1"),
         .package(url: "https://github.com/vapor/vapor.git", from: "4.0.0"),
-        .package(url: "https://github.com/apple/swift-nio.git", from: "2.33.0"),
     ],
     targets: [
         .target(name: "APNS", dependencies: [
             .product(name: "APNSwift", package: "apnswift"),
             .product(name: "Vapor", package: "vapor"),
-            .product(name: "NIOCore", package: "swift-nio")
         ]),
         .testTarget(name: "APNSTests", dependencies: [
             .target(name: "APNS"),

@@ -15,13 +15,15 @@ class APNSTests: XCTestCase {
         let app = Application(.testing)
         defer { app.shutdown() }
 
-        app.apns.configuration = try .init(
+        let authenticationConfig: APNSwiftConfiguration.Authentication = .init(
+            privateKey: try .loadFrom(filePath: "/Users/kylebrowning/Documents/AuthKey_9UC9ZLQ8YW.p8"),
+            teamIdentifier: "ABBM6U9RM5",
+            keyIdentifier: "9UC9ZLQ8YW"
+        )
+
+        app.apns.configuration = .init(
             httpClient: app.http.client.shared,
-            authenticationMethod: .jwt(
-                key: .private(pem: appleECP8PrivateKey),
-                keyIdentifier: "MY_KEY_ID",
-                teamIdentifier: "MY_TEAM_ID"
-            ),
+            authenticationConfig: authenticationConfig,
             topic: "MY_TOPIC",
             environment: .sandbox
         )

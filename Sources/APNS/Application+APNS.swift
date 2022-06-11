@@ -1,28 +1,41 @@
+import APNSwift
 import Vapor
 
 extension Application {
     public var apns: APNS {
-        .init(application: self)
+        let apns = Application.APNS(application: self)
+        self.lifecycle.use(apns)
+        return apns
     }
 
     public struct APNS {
-        public var connection: APNSwiftConnection {
+
+        struct APNSClientKey: StorageKey {
+            typealias Value = APNSClient
+        }
+
+        public var client: APNSClient {
             guard let configuration = configuration else {
                 fatalError("APNS not configured. Use app.apns.configuration = ...")
             }
-            return APNSwiftConnection(configuration: configuration, logger: logger)
+            guard let client = self.application.storage[APNSClientKey.self] else {
+                let client = APNSClient(configuration: configuration)
+                self.application.storage[APNSClientKey.self] = client
+                return client
+            }
+            return client
         }
 
-        struct ConfigurationKey: StorageKey {
-            typealias Value = APNSwiftConfiguration
+        struct APNSConfigurationKey: StorageKey {
+            typealias Value = APNSConfiguration
         }
 
-        public var configuration: APNSwiftConfiguration? {
+        public var configuration: APNSConfiguration? {
             get {
-                self.application.storage[ConfigurationKey.self]
+                self.application.storage[APNSConfigurationKey.self]
             }
             nonmutating set {
-                self.application.storage[ConfigurationKey.self] = newValue
+                self.application.storage[APNSConfigurationKey.self] = newValue
             }
         }
 
@@ -30,63 +43,10 @@ extension Application {
     }
 }
 
-extension Application.APNS: APNSwiftClient {
-    public func batchSend(
-        rawBytes payload: ByteBuffer,
-        pushType: APNSwiftConnection.PushType,
-        to deviceToken: String...,
-        on environment: APNSwift.APNSwiftConfiguration.Environment? = nil,
-        expiration: Date?,
-        priority: Int?,
-        collapseIdentifier: String?,
-        topic: String?,
-        logger: Logger?,
-        apnsID: UUID? = nil
-    ) async throws {
-        for token in deviceToken {
-            try await send(
-                rawBytes: payload,
-                pushType: pushType,
-                to: token,
-                on: environment,
-                expiration: expiration,
-                priority: priority,
-                collapseIdentifier: collapseIdentifier,
-                topic: topic,
-                logger: logger ?? self.logger,
-                apnsID: apnsID
-            )
+extension Application.APNS: LifecycleHandler {
+    public func shutdown(_ application: Application) {
+         Task {
+            try await client.shutdown()
         }
-    }
-
-
-    public func send(
-        rawBytes payload: NIOCore.ByteBuffer,
-        pushType: APNSwift.APNSwiftConnection.PushType,
-        to deviceToken: String,
-        on environment: APNSwift.APNSwiftConfiguration.Environment? = nil,
-        expiration: Date?,
-        priority: Int?,
-        collapseIdentifier: String?,
-        topic: String?,
-        logger: Logging.Logger?,
-        apnsID: UUID?
-    ) async throws {
-        try await connection.send(
-            rawBytes: payload,
-            pushType: pushType,
-            to: deviceToken,
-            on: environment,
-            expiration: expiration,
-            priority: priority,
-            collapseIdentifier: collapseIdentifier,
-            topic: topic,
-            logger: logger,
-            apnsID: apnsID
-        )
-    }
-
-    public var logger: Logger? {
-        self.application.logger
     }
 }

@@ -15,21 +15,22 @@ class APNSTests: XCTestCase {
         let app = Application(.testing)
         defer { app.shutdown() }
 
-        let authenticationConfig: APNSwiftConfiguration.Authentication = .init(
+        let authenticationConfig: APNSConfiguration.Authentication = .init(
             privateKey: try .loadFrom(filePath: "/Users/kylebrowning/Documents/AuthKey_9UC9ZLQ8YW.p8"),
             teamIdentifier: "ABBM6U9RM5",
             keyIdentifier: "9UC9ZLQ8YW"
         )
 
         app.apns.configuration = .init(
-            httpClient: app.http.client.shared,
             authenticationConfig: authenticationConfig,
             topic: "MY_TOPIC",
-            environment: .sandbox
+            environment: .sandbox,
+            eventLoopGroupProvider: .shared(app.eventLoopGroup),
+            logger: app.logger
         )
 
         app.get("test-push") { req -> HTTPStatus in
-            try await req.apns.send(
+            try await req.apns.client.send(
                 .init(title: "Hello", subtitle: "This is a test from vapor/apns"),
                 to: "98AAD4A2398DDC58595F02FA307DF9A15C18B6111D1B806949549085A8E6A55D"
             )

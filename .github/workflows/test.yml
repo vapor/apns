@@ -1,12 +1,11 @@
 name: test
 on:
-  pull_request:
-  push:
-    branches:
-    - main
+- pull_request
 jobs:
-  unit-tests:
-     uses: vapor/ci/.github/workflows/run-unit-tests.yml@reusable-workflows
-     with:
-       with_coverage: false
-       with_tsan: true
+  focal:
+    container:
+      image: swift:5.6-focal
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - run: swift test --enable-test-discovery

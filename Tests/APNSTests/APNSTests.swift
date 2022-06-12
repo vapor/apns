@@ -16,7 +16,7 @@ class APNSTests: XCTestCase {
         defer { app.shutdown() }
 
         let authenticationConfig: APNSConfiguration.Authentication = .init(
-            privateKey: try .loadFrom(filePath: "/Users/kylebrowning/Documents/AuthKey_9UC9ZLQ8YW.p8"),
+            privateKey: try .loadFrom(string: appleECP8PrivateKey),
             teamIdentifier: "ABBM6U9RM5",
             keyIdentifier: "9UC9ZLQ8YW"
         )

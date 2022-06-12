@@ -61,7 +61,6 @@ extension APNSContainers {
         guard let id = id ?? self.defaultID else {
             return nil
         }
-        print("Loading \(id)")
         return self.containers[id]
     }
 

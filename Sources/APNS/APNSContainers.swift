@@ -1,5 +1,8 @@
 import Vapor
 import APNSwift
+import NIO
+
+public typealias APNSGenericClient = APNSClient<JSONDecoder, JSONEncoder>
 
 public class APNSContainers {
     public struct ID: Hashable, Codable {
@@ -10,10 +13,10 @@ public class APNSContainers {
     }
 
     public final class Container {
-        public let configuration: APNSConfiguration
-        public let client: APNSClient
+        public let configuration: APNSClientConfiguration
+        public let client: APNSGenericClient
         
-        init(configuration: APNSConfiguration, client: APNSClient) {
+         internal init(configuration: APNSClientConfiguration, client: APNSGenericClient) {
             self.configuration = configuration
             self.client = client
         }
@@ -27,12 +30,29 @@ public class APNSContainers {
         self.containers = [:]
         self.lock = .init()
     }
+
+    public func syncShutdown() {
+        self.lock.lock()
+        defer { self.lock.unlock() }
+        do {
+            try containers.forEach { key, container in
+                try container.client.syncShutdown()
+            }
+        } catch {
+            fatalError("Could not shutdown APNS Containers")
+        }
+    }
 }
 
 extension APNSContainers {
 
     public func use(
-        _ config: APNSConfiguration,
+        _ config: APNSClientConfiguration,
+        eventLoopGroupProvider: NIOEventLoopGroupProvider,
+        responseDecoder: JSONDecoder,
+        requestEncoder: JSONEncoder,
+        byteBufferAllocator: ByteBufferAllocator = .init(),
+        backgroundActivityLogger: Logger,
         as id: ID,
         isDefault: Bool? = nil
     ) {
@@ -41,7 +61,14 @@ extension APNSContainers {
 
         self.containers[id] = Container(
             configuration: config,
-            client: APNSClient(configuration: config)
+            client: APNSGenericClient(
+                configuration: config,
+                eventLoopGroupProvider: eventLoopGroupProvider,
+                responseDecoder: responseDecoder,
+                requestEncoder: requestEncoder,
+                byteBufferAllocator: byteBufferAllocator,
+                backgroundActivityLogger: backgroundActivityLogger
+            )
         )
 
         if isDefault == true || (self.defaultID == nil && isDefault != false) {
@@ -69,19 +96,3 @@ extension APNSContainers {
     }
 }
 
-extension APNSContainers {
-
-    public func shutdown() {
-        self.lock.lock()
-        let group = DispatchGroup()
-        defer { self.lock.unlock() }
-        for container in self.containers.values {
-            group.enter()
-            Task {
-                try await container.client.shutdown()
-                group.leave()
-            }
-        }
-        group.wait()
-    }
-}

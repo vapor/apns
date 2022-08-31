@@ -12,7 +12,7 @@ public class APNSContainers {
         }
     }
 
-     public final class Container {
+    public final class Container {
         public let configuration: APNSClientConfiguration
         public let client: APNSGenericClient
         

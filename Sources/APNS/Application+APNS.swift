@@ -24,20 +24,20 @@ extension Application {
                 defer { lock.unlock() }
                 let new = APNSContainers()
                 self.application.storage.set(ContainersKey.self, to: new) {
-                    $0.shutdown()
+                    $0.syncShutdown()
                 }
                 return new
             }
         }
 
-        public var client: APNSClient {
+        public var client: APNSGenericClient {
             guard let container = containers.container() else {
                 fatalError("No default APNS container configured.")
             }
             return container.client
         }
 
-        public func client(_ id: APNSContainers.ID = .default) -> APNSClient {
+        public func client(_ id: APNSContainers.ID = .default) -> APNSGenericClient {
             guard let container = containers.container(for: id) else {
                 fatalError("No APNS container for \(id).")
             }

@@ -11,12 +11,12 @@ let package = Package(
         .library(name: "APNS", targets: ["APNS"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/swift-server-community/APNSwift.git", from: "5.0.0-beta.2"),
+        .package(url: "https://github.com/swift-server-community/APNSwift.git", from: "5.0.0-beta.3"),
         .package(url: "https://github.com/vapor/vapor.git", from: "4.0.0"),
     ],
     targets: [
         .target(name: "APNS", dependencies: [
-            .product(name: "APNSwift", package: "apnswift"),
+            .product(name: "APNS", package: "apnswift", moduleAliases: ["APNS": "APNSwift"]),
             .product(name: "Vapor", package: "vapor"),
         ]),
         .testTarget(name: "APNSTests", dependencies: [

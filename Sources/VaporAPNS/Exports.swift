@@ -1,5 +1,5 @@
 #if !BUILDING_DOCC
 
-@_exported import APNSwift
+@_exported import APNS
 
 #endif

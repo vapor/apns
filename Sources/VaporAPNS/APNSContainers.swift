@@ -1,5 +1,5 @@
 import Vapor
-import APNSwift
+import APNS
 import NIO
 
 public typealias APNSGenericClient = APNSClient<JSONDecoder, JSONEncoder>

@@ -1,4 +1,4 @@
-import APNS
+import VaporAPNS
 import XCTVapor
 
 class APNSTests: XCTestCase {

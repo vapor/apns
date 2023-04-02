@@ -52,7 +52,6 @@ extension APNSContainers {
         responseDecoder: JSONDecoder,
         requestEncoder: JSONEncoder,
         byteBufferAllocator: ByteBufferAllocator = .init(),
-        backgroundActivityLogger: Logger,
         as id: ID,
         isDefault: Bool? = nil
     ) {
@@ -66,8 +65,7 @@ extension APNSContainers {
                 eventLoopGroupProvider: eventLoopGroupProvider,
                 responseDecoder: responseDecoder,
                 requestEncoder: requestEncoder,
-                byteBufferAllocator: byteBufferAllocator,
-                backgroundActivityLogger: backgroundActivityLogger
+                byteBufferAllocator: byteBufferAllocator
             )
         )
 

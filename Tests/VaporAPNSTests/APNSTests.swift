@@ -29,7 +29,6 @@ class APNSTests: XCTestCase {
             eventLoopGroupProvider: .createNew,
             responseDecoder: JSONDecoder(),
             requestEncoder: JSONEncoder(),
-            backgroundActivityLogger: app.logger,
             as: .default
         )
 
@@ -45,8 +44,7 @@ class APNSTests: XCTestCase {
                     topic: "MY_TOPC",
                     payload: Payload()
                 ),
-                deviceToken: "98AAD4A2398DDC58595F02FA307DF9A15C18B6111D1B806949549085A8E6A55D",
-                deadline: .distantFuture
+                deviceToken: "98AAD4A2398DDC58595F02FA307DF9A15C18B6111D1B806949549085A8E6A55D"
             )
             return .ok
         }
@@ -75,7 +73,6 @@ class APNSTests: XCTestCase {
             eventLoopGroupProvider: .createNew,
             responseDecoder: JSONDecoder(),
             requestEncoder: JSONEncoder(),
-            backgroundActivityLogger: app.logger,
             as: .default
         )
 
@@ -105,7 +102,6 @@ class APNSTests: XCTestCase {
             eventLoopGroupProvider: .createNew,
             responseDecoder: JSONDecoder(),
             requestEncoder: JSONEncoder(),
-            backgroundActivityLogger: app.logger,
             as: .custom
         )
 
@@ -140,7 +136,6 @@ class APNSTests: XCTestCase {
             eventLoopGroupProvider: .createNew,
             responseDecoder: JSONDecoder(),
             requestEncoder: JSONEncoder(),
-            backgroundActivityLogger: app.logger,
             as: .default,
             isDefault: true
         )
@@ -155,7 +150,6 @@ class APNSTests: XCTestCase {
             eventLoopGroupProvider: .createNew,
             responseDecoder: JSONDecoder(),
             requestEncoder: JSONEncoder(),
-            backgroundActivityLogger: app.logger,
             as: .custom,
             isDefault: true
         )
@@ -192,7 +186,6 @@ class APNSTests: XCTestCase {
             eventLoopGroupProvider: .createNew,
             responseDecoder: JSONDecoder(),
             requestEncoder: JSONEncoder(),
-            backgroundActivityLogger: app.logger,
             as: .default,
             isDefault: true
         )
@@ -207,7 +200,6 @@ class APNSTests: XCTestCase {
             eventLoopGroupProvider: .createNew,
             responseDecoder: JSONDecoder(),
             requestEncoder: JSONEncoder(),
-            backgroundActivityLogger: app.logger,
             as: .custom
         )
 

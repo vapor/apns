@@ -19,7 +19,7 @@ let package = Package(
             .product(name: "APNS", package: "apnswift"),
             .product(name: "Vapor", package: "vapor"),
         ]),
-        .testTarget(name: "APNSTests", dependencies: [
+        .testTarget(name: "VaporAPNSTests", dependencies: [
             .target(name: "VaporAPNS"),
             .product(name: "XCTVapor", package: "vapor"),
         ]),

@@ -1,3 +1,4 @@
+import APNS
 import VaporAPNS
 import XCTVapor
 

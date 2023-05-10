@@ -1,6 +1,8 @@
 import Vapor
 import APNS
+import Foundation
 import NIO
+import NIOConcurrencyHelpers
 
 public typealias APNSGenericClient = APNSClient<JSONDecoder, JSONEncoder>
 
@@ -24,7 +26,7 @@ public class APNSContainers {
 
     private var containers: [ID: Container]
     private var defaultID: ID?
-    private var lock: Lock
+    private var lock: NIOLock
 
     init() {
         self.containers = [:]

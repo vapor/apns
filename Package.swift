@@ -1,26 +1,26 @@
-// swift-tools-version:5.6
+// swift-tools-version:5.7
 import PackageDescription
 
 let package = Package(
-    name: "apns",
+    name: "vapor-apns",
     platforms: [
-       .macOS(.v12),
-       .iOS(.v15)
+       .macOS(.v13),
+       .iOS(.v16)
     ],
     products: [
-        .library(name: "APNS", targets: ["APNS"]),
+        .library(name: "VaporAPNS", targets: ["VaporAPNS"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/swift-server-community/APNSwift.git", from: "5.0.0-beta.2"),
+        .package(url: "https://github.com/swift-server-community/APNSwift.git", from: "5.0.0-beta.3"),
         .package(url: "https://github.com/vapor/vapor.git", from: "4.0.0"),
     ],
     targets: [
-        .target(name: "APNS", dependencies: [
-            .product(name: "APNSwift", package: "apnswift"),
+        .target(name: "VaporAPNS", dependencies: [
+            .product(name: "APNS", package: "apnswift"),
             .product(name: "Vapor", package: "vapor"),
         ]),
-        .testTarget(name: "APNSTests", dependencies: [
-            .target(name: "APNS"),
+        .testTarget(name: "VaporAPNSTests", dependencies: [
+            .target(name: "VaporAPNS"),
             .product(name: "XCTVapor", package: "vapor"),
         ]),
     ]

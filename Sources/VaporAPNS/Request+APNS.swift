@@ -1,4 +1,4 @@
-import APNSwift
+import APNS
 import Vapor
 
 extension Request {

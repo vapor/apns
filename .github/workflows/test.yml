@@ -1,21 +1,15 @@
 name: test
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 on:
-- pull_request
+  pull_request: { types: [opened, reopened, synchronize, ready_for_review] }
+  push: { branches: [ main ] }
+
 jobs:
-  focal:
-    container:
-      image: swift:5.7
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v3
-    - run: swift test
-  test-exports:
-    name: Test exports
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out Vapor
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-      - name: Build
-        run: swift build -Xswiftc -DBUILDING_DOCC
+  unit-tests:
+    uses: vapor/ci/.github/workflows/run-unit-tests.yml@reusable-workflows
+    with:
+      with_coverage: true
+      with_tsan: false
+

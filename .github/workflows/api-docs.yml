@@ -10,5 +10,5 @@ jobs:
      secrets: inherit
      with:
        package_name: apns
-       modules: APNS
-       pathsToInvalidate: /apns/*
+       modules: VaporAPNS
+       pathsToInvalidate: /vaporapns/*

@@ -6,15 +6,15 @@ import NIOConcurrencyHelpers
 
 public typealias APNSGenericClient = APNSClient<JSONDecoder, JSONEncoder>
 
-public class APNSContainers {
-    public struct ID: Hashable, Codable {
+public class APNSContainers: @unchecked Sendable { // @unchecked, because the mutable state is protected by a lock.
+    public struct ID: Sendable, Hashable, Codable {
         public let string: String
         public init(string: String) {
             self.string = string
         }
     }
 
-    public final class Container {
+    public final class Container: Sendable {
         public let configuration: APNSClientConfiguration
         public let client: APNSGenericClient
         
@@ -95,4 +95,3 @@ extension APNSContainers {
         container()
     }
 }
-

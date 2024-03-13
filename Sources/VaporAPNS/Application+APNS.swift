@@ -7,10 +7,10 @@ extension Application {
         return .init(application: self)
     }
 
-    public struct APNS {
+    public struct APNS: Sendable {
 
         // Synchronize access across threads.
-        private var lock: NIOLock
+        private let lock: NIOLock
 
         struct ContainersKey: StorageKey, LockKey {
             typealias Value = APNSContainers

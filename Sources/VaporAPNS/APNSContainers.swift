@@ -1,6 +1,12 @@
 import Vapor
 import APNS
+#if canImport(Darwin)
 import Foundation
+#else
+// JSONEncoder / JSONDecoder is not Sendable in scf, but is in Darwin...
+// Import as `@preconcurrency` to fix warnings.
+@preconcurrency import Foundation
+#endif
 import NIO
 import NIOConcurrencyHelpers
 

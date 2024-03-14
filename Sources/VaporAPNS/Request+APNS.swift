@@ -6,4 +6,3 @@ extension Request {
         .init(application: self.application)
     }
 }
-

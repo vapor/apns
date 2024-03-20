@@ -1,5 +1,4 @@
 import APNS
-import NIOConcurrencyHelpers
 import Vapor
 
 extension Application {
@@ -7,11 +6,7 @@ extension Application {
         return .init(application: self)
     }
 
-    public struct APNS {
-
-        // Synchronize access across threads.
-        private var lock: NIOLock
-
+    public struct APNS: Sendable {
         struct ContainersKey: StorageKey, LockKey {
             typealias Value = APNSContainers
         }
@@ -49,7 +44,6 @@ extension Application {
 
         public init(application: Application) {
             self.application = application
-            self.lock = .init()
         }
     }
 }

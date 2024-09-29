@@ -19,9 +19,7 @@ extension Application {
                 lock.lock()
                 defer { lock.unlock() }
                 let new = APNSContainers()
-                self.application.storage.set(ContainersKey.self, to: new) {
-                    $0.syncShutdown()
-                }
+                self.application.storage.set(ContainersKey.self, to: new)
                 return new
             }
         }
@@ -100,7 +98,7 @@ extension Application.APNS {
         containers.use(
             APNSClientConfiguration(
                 authenticationMethod: authenticationMethod,
-                environment: .sandbox
+                environment: .development
             ),
             eventLoopGroupProvider: .shared(application.eventLoopGroup),
             responseDecoder: JSONDecoder(),

@@ -35,18 +35,6 @@ public final class APNSContainers: Sendable {
     init() {
         storage = .init((containers: [:], defaultID: nil))
     }
-
-    public func syncShutdown() {
-        storage.withLockedValue {
-            do {
-                try $0.containers.values.forEach { container in
-                    try container.client.syncShutdown()
-                }
-            } catch {
-                fatalError("Could not shutdown APNS Containers")
-            }
-        }
-    }
 }
 
 extension APNSContainers {

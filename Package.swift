@@ -11,7 +11,7 @@ let package = Package(
     .library(name: "VaporAPNS", targets: ["VaporAPNS"])
   ],
   dependencies: [
-    .package(url: "https://github.com/swift-server-community/APNSwift.git", from: "6.1.0"),
+    .package(url: "https://github.com/swift-server-community/APNSwift.git", from: "7.0.0"),
     .package(url: "https://github.com/vapor/vapor.git", from: "4.110.1"),
   ],
   targets: [

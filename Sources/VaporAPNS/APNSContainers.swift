@@ -69,7 +69,7 @@ extension APNSContainers {
     ///
     /// let productionConfig = APNSClientConfiguration(
     ///     authenticationMethod: .jwt(
-    ///         privateKey: try .loadFrom(string: apnsKey),
+    ///         privateKey: try .init(pemRepresentation: apnsKey),
     ///         keyIdentifier: keyIdentifier,
     ///         teamIdentifier: teamIdentifier
     ///     ),
@@ -85,7 +85,7 @@ extension APNSContainers {
     /// )
     ///
     /// var developmentConfig = productionConfig
-    /// developmentConfig.environment = .sandbox
+    /// developmentConfig.environment = .development
     ///
     /// app.apns.containers.use(
     ///     developmentConfig,

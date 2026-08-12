@@ -63,7 +63,7 @@ extension Application.APNS {
     /// else { throw Abort(.serviceUnavailable) }
     /// 
     /// app.apns.configure(.jwt(
-    ///     privateKey: try .loadFrom(string: apnsKey),
+    ///     privateKey: try .init(pemRepresentation: apnsKey),
     ///     /// The identifier of the key in the developer portal.
     ///     keyIdentifier: Environment.get("APNS_KEY_ID"),
     ///     /// The team identifier of the app in the developer portal.

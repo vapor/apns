@@ -1,15 +1,8 @@
 public import APNS
+public import Foundation
 import Logging
 public import NIOCore
 import Vapor
-
-#if canImport(Darwin)
-    public import Foundation
-#else
-    // JSONEncoder / JSONDecoder is not Sendable in scf, but is in Darwin...
-    // Import as `@preconcurrency` to fix warnings.
-    @preconcurrency public import Foundation
-#endif
 
 public typealias APNSGenericClient = APNSClient<JSONDecoder, JSONEncoder>
 

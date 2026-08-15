@@ -1,5 +1,4 @@
-import APNS
-import Vapor
+public import Vapor
 
 extension Request {
     public var apns: Application.APNS {

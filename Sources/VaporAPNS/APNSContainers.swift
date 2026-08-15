@@ -1,15 +1,8 @@
-import Vapor
-import APNS
+public import APNS
+public import Foundation
 import Logging
-#if canImport(Darwin)
-import Foundation
-#else
-// JSONEncoder / JSONDecoder is not Sendable in scf, but is in Darwin...
-// Import as `@preconcurrency` to fix warnings.
-@preconcurrency import Foundation
-#endif
-import NIO
-import NIOConcurrencyHelpers
+public import NIOCore
+import Vapor
 
 public typealias APNSGenericClient = APNSClient<JSONDecoder, JSONEncoder>
 
@@ -24,7 +17,7 @@ public final actor APNSContainers: Sendable {
     public final class Container: Sendable {
         public let configuration: APNSClientConfiguration
         public let client: APNSGenericClient
-        
+
         internal init(configuration: APNSClientConfiguration, client: APNSGenericClient) {
             self.configuration = configuration
             self.client = client
@@ -36,7 +29,7 @@ public final actor APNSContainers: Sendable {
     private let logger: Logger
 
     init() {
-        self.containers =  [:]
+        self.containers = [:]
         self.defaultID = nil
         self.logger = Logger(label: "codes.vapor.apns.containers")
     }
@@ -69,7 +62,7 @@ extension APNSContainers {
     ///
     /// let productionConfig = APNSClientConfiguration(
     ///     authenticationMethod: .jwt(
-    ///         privateKey: try .loadFrom(string: apnsKey),
+    ///         privateKey: try .init(pemRepresentation: apnsKey),
     ///         keyIdentifier: keyIdentifier,
     ///         teamIdentifier: teamIdentifier
     ///     ),
@@ -85,7 +78,7 @@ extension APNSContainers {
     /// )
     ///
     /// var developmentConfig = productionConfig
-    /// developmentConfig.environment = .sandbox
+    /// developmentConfig.environment = .development
     ///
     /// app.apns.containers.use(
     ///     developmentConfig,
@@ -107,7 +100,7 @@ extension APNSContainers {
     ///     case development
     /// }
     ///
-    /// /// Get the APNs environment from the embedded 
+    /// /// Get the APNs environment from the embedded
     /// /// provisioning profile, or nil if it can't
     /// /// be determined.
     /// ///
@@ -186,7 +179,7 @@ extension APNSContainers {
                 byteBufferAllocator: byteBufferAllocator
             )
         )
-        
+
         if isDefault == true || (self.defaultID == nil && isDefault != false) {
             self.defaultID = id
         }

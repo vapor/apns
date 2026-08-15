@@ -1,30 +1,11 @@
 import APNS
-import VaporAPNS
+import APNSCore
 import Testing
 import Vapor
+import VaporAPNS
 import VaporTesting
 
 private struct Payload: Codable {}
-
-private let appleECP8PrivateKey = """
------BEGIN PRIVATE KEY-----
-MIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQg2sD+kukkA8GZUpmm
-jRa4fJ9Xa/JnIG4Hpi7tNO66+OGgCgYIKoZIzj0DAQehRANCAATZp0yt0btpR9kf
-ntp4oUUzTV0+eTELXxJxFvhnqmgwGAm1iVW132XLrdRG/ntlbQ1yzUuJkHtYBNve
-y+77Vzsd
------END PRIVATE KEY-----
-"""
-
-private func withApp<T>(_ test: (Application) async throws -> T) async throws -> T {
-    let app = try await Application.make(.testing)
-    defer {
-        Task {
-            await app.apns.containers.shutdown()
-            try await app.asyncShutdown()
-        }
-    }
-    return try await test(app)
-}
 
 @Test("Application")
 func testApplication() async throws {
@@ -62,7 +43,7 @@ func testApplication() async throws {
             )
             return .ok
         }
-        
+
         try await app.testing().test(.GET, "test-push") { response async in
             #expect(response.status == .internalServerError)
         }
@@ -93,13 +74,13 @@ func testContainers() async throws {
         )
 
         let defaultContainer = await app.apns.containers.container()
-        
+
         #expect(defaultContainer != nil)
-        
+
         let defaultMethodContainer = await app.apns.containers.container(for: .default)!
-        
+
         let defaultComputedContainer = await app.apns.containers.container!
-        
+
         #expect(defaultContainer === defaultMethodContainer)
         #expect(defaultContainer === defaultComputedContainer)
 
@@ -109,7 +90,7 @@ func testContainers() async throws {
 
             return .ok
         }
-        
+
         try await app.testing().test(.GET, "test-push") { response async in
             #expect(response.status == .ok)
         }
@@ -128,15 +109,15 @@ func testContainers() async throws {
         )
 
         let containerPostCustom = await app.apns.containers.container()
-        
+
         #expect(containerPostCustom != nil)
-        
+
         app.get("test-push2") { req -> HTTPStatus in
             let client = await req.apns.client
             #expect(client === containerPostCustom?.client)
             return .ok
         }
-        
+
         try await app.testing().test(.GET, "test-push2") { response async in
             #expect(response.status == .ok)
         }
@@ -181,16 +162,16 @@ func testCustomContainers() async throws {
         )
 
         let containerPostCustom = await app.apns.containers.container()
-        
+
         #expect(containerPostCustom != nil)
-        
+
         app.get("test-push2") { req -> HTTPStatus in
             let client = await req.apns.client
             #expect(client === containerPostCustom?.client)
-            
+
             return .ok
         }
-        
+
         try await app.testing().test(.GET, "test-push2") { response async in
             #expect(response.status == .ok)
         }
@@ -234,21 +215,21 @@ func testNonDefaultContainers() async throws {
         )
 
         let containerPostCustom = await app.apns.containers.container()
-        
+
         let containerNonDefaultCustom = await app.apns.containers.container(for: .custom)
-        
+
         let customContainer = await app.apns.containers.container(for: .custom)
-        
+
         #expect(customContainer !== containerPostCustom)
         #expect(containerPostCustom != nil)
-        
+
         app.get("test-push2") { req -> HTTPStatus in
             let customClient = await req.apns.client(.custom)
             #expect(customClient !== containerPostCustom?.client)
             #expect(customClient === containerNonDefaultCustom?.client)
             return .ok
         }
-        
+
         try await app.testing().test(.GET, "test-push2") { response async in
             #expect(response.status == .ok)
         }

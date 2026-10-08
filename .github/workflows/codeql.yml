@@ -22,7 +22,7 @@ jobs:
             build-mode: none
           - language: swift
             build-mode: autobuild
-    runs-on: ${{ (matrix.language == 'swift' && 'macos-26') || 'ubuntu-latest' }}
+    runs-on: ${{ (matrix.language == 'swift' && 'xcode-27') || 'ubuntu-latest' }}
     steps:
       - name: Select an Xcode which provides Swift 6.4
         if: ${{ matrix.language == 'swift' }}

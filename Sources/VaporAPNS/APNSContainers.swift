@@ -1,12 +1,35 @@
 public import APNS
-public import Foundation
+import APNSCore
 import Logging
 public import NIOCore
-import Vapor
+public import NIOPosix
+public import ServiceLifecycle
+
+#if canImport(FoundationEssentials)
+    public import FoundationEssentials
+#else
+    public import Foundation
+#endif
 
 public typealias APNSGenericClient = APNSClient<JSONDecoder, JSONEncoder>
 
-public final actor APNSContainers: Sendable {
+/// Holds the configured APNs clients for an application.
+///
+/// Create one while configuring your application, register the clients you need, then hand it
+/// to the application so the clients are shut down with it:
+///
+/// ```swift
+/// let apns = APNSContainers()
+/// try await apns.configure(.jwt(
+///     privateKey: try .init(pemRepresentation: apnsKey),
+///     keyIdentifier: keyIdentifier,
+///     teamIdentifier: teamIdentifier
+/// ))
+/// app.addService(apns)
+/// ```
+///
+/// Pass the containers to whatever needs to send notifications, such as your route collections.
+public final actor APNSContainers: Service {
     public struct ID: Sendable, Hashable, Codable {
         public let string: String
         public init(string: String) {
@@ -28,10 +51,16 @@ public final actor APNSContainers: Sendable {
     private var defaultID: ID?
     private let logger: Logger
 
-    init() {
+    public init() {
         self.containers = [:]
         self.defaultID = nil
         self.logger = Logger(label: "codes.vapor.apns.containers")
+    }
+
+    /// Keeps the clients alive until the application shuts down, then shuts them down.
+    public func run() async throws {
+        try? await gracefulShutdown()
+        await self.shutdown()
     }
 
     public func shutdown() async {
@@ -69,9 +98,9 @@ extension APNSContainers {
     ///     environment: .production
     /// )
     ///
-    /// app.apns.containers.use(
+    /// let apns = APNSContainers()
+    /// await apns.use(
     ///     productionConfig,
-    ///     eventLoopGroupProvider: .shared(app.eventLoopGroup),
     ///     responseDecoder: JSONDecoder(),
     ///     requestEncoder: JSONEncoder(),
     ///     as: .production
@@ -80,13 +109,13 @@ extension APNSContainers {
     /// var developmentConfig = productionConfig
     /// developmentConfig.environment = .development
     ///
-    /// app.apns.containers.use(
+    /// await apns.use(
     ///     developmentConfig,
-    ///     eventLoopGroupProvider: .shared(app.eventLoopGroup),
     ///     responseDecoder: JSONDecoder(),
     ///     requestEncoder: JSONEncoder(),
     ///     as: .development
     /// )
+    /// app.addService(apns)
     /// ```
     ///
     /// As shown above, the same key can be used for both the development and production environments.
@@ -154,15 +183,15 @@ extension APNSContainers {
     ///
     /// - Parameters:
     ///   - config: The APNs configuration.
-    ///   - eventLoopGroupProvider: Specify how the ``NIOCore/EventLoopGroup`` will be created. Example: `.shared(app.eventLoopGroup)`
+    ///   - eventLoopGroupProvider: Specify how the ``NIOCore/EventLoopGroup`` will be created. Defaults to the shared NIO singleton group.
     ///   - responseDecoder: A decoder to use when decoding responses from the APNs server. Example: `JSONDecoder()`
     ///   - requestEncoder: An encoder to use when encoding notifications. Example: `JSONEncoder()`
     ///   - byteBufferAllocator: The allocator to use.
     ///   - id: The container ID to access the configuration under.
-    ///   - isDefault: A flag to specify the configuration as the default when ``Vapor/Application/APNS/client`` is called. The first configuration that doesn't specify `false` is automatically configured as the default.
+    ///   - isDefault: A flag to specify the configuration as the default when ``client`` is called. The first configuration that doesn't specify `false` is automatically configured as the default.
     public func use(
         _ config: APNSClientConfiguration,
-        eventLoopGroupProvider: NIOEventLoopGroupProvider,
+        eventLoopGroupProvider: NIOEventLoopGroupProvider = .shared(MultiThreadedEventLoopGroup.singleton),
         responseDecoder: JSONDecoder,
         requestEncoder: JSONEncoder,
         byteBufferAllocator: ByteBufferAllocator = .init(),
@@ -198,5 +227,87 @@ extension APNSContainers {
 
     public var container: APNSContainers.Container? {
         container()
+    }
+
+    /// The client for the default container.
+    ///
+    /// - Precondition: A default container has been configured.
+    public var client: APNSGenericClient {
+        guard let container = self.container() else {
+            fatalError("No default APNS container configured.")
+        }
+        return container.client
+    }
+
+    /// The client for the given container.
+    ///
+    /// - Precondition: A container has been configured under `id`.
+    public func client(_ id: ID) -> APNSGenericClient {
+        guard let container = self.container(for: id) else {
+            fatalError("No APNS container for \(id).")
+        }
+        return container.client
+    }
+}
+
+extension APNSContainers {
+    /// Configure both a production and development APNs environment.
+    ///
+    /// This convenience method creates two clients available via ``client(_:)`` with ``ID/production`` and ``ID/development`` that make it easy to support both development builds (ie. run from Xcode) and release builds (ie. TestFlight/App Store):
+    ///
+    /// ```swift
+    /// /// The .p8 file as a string.
+    /// guard let apnsKey = Environment.get("APNS_KEY_P8")
+    /// else { throw Abort(.serviceUnavailable) }
+    ///
+    /// let apns = APNSContainers()
+    /// await apns.configure(.jwt(
+    ///     privateKey: try .init(pemRepresentation: apnsKey),
+    ///     /// The identifier of the key in the developer portal.
+    ///     keyIdentifier: Environment.get("APNS_KEY_ID"),
+    ///     /// The team identifier of the app in the developer portal.
+    ///     teamIdentifier: Environment.get("APNS_TEAM_ID")
+    /// ))
+    /// app.addService(apns)
+    ///
+    /// // ...
+    ///
+    /// let response = switch deviceToken.environment {
+    /// case .production:
+    ///     try await apns.client(.production)
+    ///         .sendAlertNotification(notification, deviceToken: deviceToken.hexadecimalToken)
+    /// case .development:
+    ///     try await apns.client(.development)
+    ///         .sendAlertNotification(notification, deviceToken: deviceToken.hexadecimalToken)
+    /// }
+    /// ```
+    ///
+    /// For more control over configuration, including sample code to determine the environment an APNs device token belongs to, see ``use(_:eventLoopGroupProvider:responseDecoder:requestEncoder:byteBufferAllocator:as:isDefault:)``.
+    ///
+    /// - Note: The same key can be used for both the development and production environments.
+    ///
+    /// - Important: Make sure not to store your APNs key within your code or repo directly, and opt to store it via a secure store specific to your deployment, such as in a .env supplied at deploy time.
+    ///
+    /// - Parameter authenticationMethod: An APNs authentication method to use when connecting to Apple's production and development servers.
+    public func configure(_ authenticationMethod: APNSClientConfiguration.AuthenticationMethod) {
+        self.use(
+            APNSClientConfiguration(
+                authenticationMethod: authenticationMethod,
+                environment: .production
+            ),
+            responseDecoder: JSONDecoder(),
+            requestEncoder: JSONEncoder(),
+            as: .production
+        )
+
+        self.use(
+            APNSClientConfiguration(
+                authenticationMethod: authenticationMethod,
+                environment: .development
+            ),
+            responseDecoder: JSONDecoder(),
+            requestEncoder: JSONEncoder(),
+            as: .development
+        )
     }
 }

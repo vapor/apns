@@ -5,11 +5,29 @@ concurrency:
 on:
   pull_request: { types: [opened, reopened, synchronize, ready_for_review] }
   push: { branches: [ main ] }
+permissions:
+  contents: read
 
 jobs:
   unit-tests:
+    permissions:
+      contents: read
     uses: vapor/ci/.github/workflows/run-unit-tests.yml@main
     with:
       with_coverage: true
       with_tsan: false
+      with_linting: true
+      with_musl: true
+      with_android: false
+      with_windows: false
+      with_wasm: false
+      ios_scheme_name: vapor-apns
+      ios_xcodebuild_action: ""
+    secrets: inherit
 
+  submit-dependencies:
+    permissions:
+      contents: write
+    if: ${{ github.event_name == 'push' }}
+    uses: vapor/ci/.github/workflows/submit-deps.yml@main
+    secrets: inherit

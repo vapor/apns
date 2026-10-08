@@ -1,5 +1,7 @@
-import APNS
-import Vapor
+public import APNS
+import APNSCore
+import Foundation
+public import Vapor
 
 extension Application {
     public var apns: APNS {
@@ -54,24 +56,24 @@ extension Application {
 
 extension Application.APNS {
     /// Configure both a production and development APNs environment.
-    /// 
+    ///
     /// This convenience method creates two clients available via ``client(_:)`` with ``APNSContainers/ID/production`` and ``APNSContainers/ID/development`` that make it easy to support both development builds (ie. run from Xcode) and release builds (ie. TestFlight/App Store):
-    /// 
+    ///
     /// ```swift
     /// /// The .p8 file as a string.
     /// guard let apnsKey = Environment.get("APNS_KEY_P8")
     /// else { throw Abort(.serviceUnavailable) }
-    /// 
+    ///
     /// app.apns.configure(.jwt(
-    ///     privateKey: try .loadFrom(string: apnsKey),
+    ///     privateKey: try .init(pemRepresentation: apnsKey),
     ///     /// The identifier of the key in the developer portal.
     ///     keyIdentifier: Environment.get("APNS_KEY_ID"),
     ///     /// The team identifier of the app in the developer portal.
     ///     teamIdentifier: Environment.get("APNS_TEAM_ID")
     /// ))
-    /// 
+    ///
     /// // ...
-    /// 
+    ///
     /// let response = switch deviceToken.environment {
     /// case .production:
     ///     try await apns.client(.production)
@@ -81,11 +83,11 @@ extension Application.APNS {
     ///         .sendAlertNotification(notification, deviceToken: deviceToken.hexadecimalToken)
     /// }
     /// ```
-    /// 
+    ///
     /// For more control over configuration, including sample code to determine the environment an APFs device token belongs to, see ``APNSContainers/use(_:eventLoopGroupProvider:responseDecoder:requestEncoder:byteBufferAllocator:as:isDefault:)``.
     ///
     /// - Note: The same key can be used for both the development and production environments.
-    /// 
+    ///
     /// - Important: Make sure not to store your APNs key within your code or repo directly, and opt to store it via a secure store specific to your deployment, such as in a .env supplied at deploy time.
     ///
     /// - Parameter authenticationMethod: An APNs authentication method to use when connecting to Apple's production and development servers.
@@ -100,7 +102,7 @@ extension Application.APNS {
             requestEncoder: JSONEncoder(),
             as: .production
         )
-        
+
         await containers.use(
             APNSClientConfiguration(
                 authenticationMethod: authenticationMethod,

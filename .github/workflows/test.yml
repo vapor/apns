@@ -17,7 +17,8 @@ jobs:
       with_coverage: true
       with_tsan: false
       with_linting: true
-      with_musl: true
+      # swift-http-server, a Vapor 5 dependency, does not build on musl yet.
+      with_musl: false
       with_android: false
       with_windows: false
       with_wasm: false

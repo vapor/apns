@@ -7,6 +7,8 @@ on:
   schedule:
     - cron: '0 0 * * 1'
 
+# Swift analysis is off until CodeQL supports Swift 6.4, which Vapor 5 requires.
+# See https://codeql.github.com/docs/codeql-overview/supported-languages-and-frameworks/
 jobs:
   analyze:
     name: Analyze (${{ matrix.language }})
@@ -20,15 +22,8 @@ jobs:
         include:
           - language: actions
             build-mode: none
-          - language: swift
-            build-mode: autobuild
-    runs-on: ${{ (matrix.language == 'swift' && 'xcode-27') || 'ubuntu-latest' }}
+    runs-on: ubuntu-latest
     steps:
-      - name: Select an Xcode which provides Swift 6.4
-        if: ${{ matrix.language == 'swift' }}
-        uses: maxim-lobanov/setup-xcode@ed7a3b1fda3918c0306d1b724322adc0b8cc0a90 # v1.7.0
-        with:
-          xcode-version: latest-stable
       - name: Checkout repository
         uses: actions/checkout@v7
       - name: Initialize CodeQL

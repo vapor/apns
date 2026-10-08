@@ -12,7 +12,7 @@ jobs:
   unit-tests:
     permissions:
       contents: read
-    uses: vapor/ci/.github/workflows/run-unit-tests.yml@f6044fa7c1a37da22bb3f3366f9bde6cd58cf234 # main
+    uses: vapor/ci/.github/workflows/run-unit-tests.yml@main
     with:
       with_coverage: true
       with_tsan: false
@@ -30,12 +30,12 @@ jobs:
     permissions:
       contents: write
     if: ${{ github.event_name == 'push' }}
-    uses: vapor/ci/.github/workflows/submit-deps.yml@f6044fa7c1a37da22bb3f3366f9bde6cd58cf234 # main
+    uses: vapor/ci/.github/workflows/submit-deps.yml@main
     secrets: inherit
 
   foundation-linking:
     permissions:
       contents: read
-    uses: vapor/ci/.github/workflows/check-foundation-linking.yml@f6044fa7c1a37da22bb3f3366f9bde6cd58cf234 # main
+    uses: vapor/ci/.github/workflows/check-foundation-linking.yml@main
     with:
       swift_image: swift:6.4-noble

@@ -1,4 +1,7 @@
-import Vapor
+import APNS
+import APNSCore
+import Crypto
+import VaporAPNS
 
 /// A throwaway EC P-256 key used purely to satisfy JWT configuration in tests.
 ///
@@ -12,17 +15,32 @@ let appleECP8PrivateKey = """
     -----END PRIVATE KEY-----
     """
 
-/// Runs `test` against a freshly made testing `Application`, shutting it down afterwards.
-///
-/// The shutdown is awaited rather than fired off in a detached `Task` so that APNs containers
-/// are torn down before the test returns.
-func withApp(_ test: (Application) async throws -> Void) async throws {
-    let app = try await Application.make(.testing)
+func testAuthenticationMethod() throws -> APNSClientConfiguration.AuthenticationMethod {
+    .jwt(
+        privateKey: try .init(pemRepresentation: appleECP8PrivateKey),
+        keyIdentifier: "9UC9ZLQ8YW",
+        teamIdentifier: "ABBM6U9RM5"
+    )
+}
+
+func testConfiguration(environment: APNSEnvironment = .development) throws -> APNSClientConfiguration {
+    APNSClientConfiguration(authenticationMethod: try testAuthenticationMethod(), environment: environment)
+}
+
+/// Runs `test` with a fresh ``APNSClients``, shutting its clients down afterwards.
+func withClients(_ test: (APNSClients) async throws -> Void) async throws {
+    let clients = APNSClients()
     do {
-        try await test(app)
+        try await test(clients)
     } catch {
-        try await app.asyncShutdown()
+        await clients.shutdown()
         throw error
     }
-    try await app.asyncShutdown()
+    await clients.shutdown()
+}
+
+extension APNSClients.ID {
+    static var custom: APNSClients.ID {
+        .init(string: "custom")
+    }
 }

@@ -17,7 +17,8 @@ jobs:
       with_coverage: true
       with_tsan: false
       with_linting: true
-      with_musl: true
+      # swift-http-server, a Vapor 5 dependency, does not build on musl yet.
+      with_musl: false
       with_android: false
       with_windows: false
       with_wasm: false
@@ -31,3 +32,10 @@ jobs:
     if: ${{ github.event_name == 'push' }}
     uses: vapor/ci/.github/workflows/submit-deps.yml@main
     secrets: inherit
+
+  foundation-linking:
+    permissions:
+      contents: read
+    uses: vapor/ci/.github/workflows/check-foundation-linking.yml@main
+    with:
+      swift_image: swift:6.4-noble

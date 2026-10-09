@@ -14,9 +14,9 @@ import VaporTesting
     import Foundation
 #endif
 
-@Test("APNS Container Configuration")
-func testAPNSContainerConfiguration() async throws {
-    try await withContainers { apns in
+@Test("APNs Client Configuration")
+func testAPNSClientConfiguration() async throws {
+    try await withClients { apns in
         await apns.use(
             try testConfiguration(),
             responseDecoder: JSONDecoder(),
@@ -24,16 +24,16 @@ func testAPNSContainerConfiguration() async throws {
             as: .default
         )
 
-        let container = await apns.container()
-        #expect(container != nil)
+        let entry = await apns.entry()
+        #expect(entry != nil)
         // Note: APNSEnvironment doesn't conform to Equatable, so we verify configuration exists
-        #expect(container?.configuration != nil)
+        #expect(entry?.configuration != nil)
     }
 }
 
-@Test("Multiple APNS Containers")
-func testMultipleAPNSContainers() async throws {
-    try await withContainers { apns in
+@Test("Multiple APNs Clients")
+func testMultipleAPNSClients() async throws {
+    try await withClients { apns in
         await apns.use(
             try testConfiguration(environment: .production),
             responseDecoder: JSONDecoder(),
@@ -48,35 +48,35 @@ func testMultipleAPNSContainers() async throws {
             as: .development
         )
 
-        let productionContainer = await apns.container(for: .production)
-        let developmentContainer = await apns.container(for: .development)
-        #expect(productionContainer != nil)
-        #expect(developmentContainer != nil)
-        #expect(productionContainer !== developmentContainer)
+        let productionEntry = await apns.entry(for: .production)
+        let developmentEntry = await apns.entry(for: .development)
+        #expect(productionEntry != nil)
+        #expect(developmentEntry != nil)
+        #expect(productionEntry !== developmentEntry)
     }
 }
 
-@Test("APNS Container Shutdown")
-func testAPNSContainerShutdown() async throws {
-    let apns = APNSContainers()
+@Test("APNs Client Shutdown")
+func testAPNSClientShutdown() async throws {
+    let apns = APNSClients()
     await apns.use(
         try testConfiguration(),
         responseDecoder: JSONDecoder(),
         requestEncoder: JSONEncoder(),
         as: .default
     )
-    #expect(await apns.container() != nil)
+    #expect(await apns.entry() != nil)
 
     await apns.shutdown()
 
-    #expect(await apns.container() == nil)
+    #expect(await apns.entry() == nil)
     // Shutting down twice is harmless.
     await apns.shutdown()
 }
 
 @Test("Shuts down with the service group")
 func testServiceShutdown() async throws {
-    let apns = APNSContainers()
+    let apns = APNSClients()
     await apns.use(
         try testConfiguration(),
         responseDecoder: JSONDecoder(),
@@ -97,35 +97,35 @@ func testServiceShutdown() async throws {
         await group.waitForAll()
     }
 
-    #expect(await apns.container() == nil)
+    #expect(await apns.entry() == nil)
 }
 
 @Test("Convenience Configuration Method")
 func testConvenienceConfigurationMethod() async throws {
-    try await withContainers { apns in
+    try await withClients { apns in
         await apns.configure(try testAuthenticationMethod())
 
-        let productionContainer = await apns.container(for: .production)
-        let developmentContainer = await apns.container(for: .development)
-        #expect(productionContainer != nil)
-        #expect(developmentContainer != nil)
-        #expect(productionContainer !== developmentContainer)
+        let productionEntry = await apns.entry(for: .production)
+        let developmentEntry = await apns.entry(for: .development)
+        #expect(productionEntry != nil)
+        #expect(developmentEntry != nil)
+        #expect(productionEntry !== developmentEntry)
 
         // Production is registered first, so it is the default.
-        let defaultContainer = await apns.container()
-        #expect(defaultContainer === productionContainer)
+        let defaultEntry = await apns.entry()
+        #expect(defaultEntry === productionEntry)
     }
 }
 
 @Test("Registers as an application service")
 func testAddService() async throws {
     try await withApp { app in
-        let apns = APNSContainers()
+        let apns = APNSClients()
         await apns.configure(try testAuthenticationMethod())
         app.addService(apns)
 
         app.get("has-apns") { _ -> HTTPResponse.Status in
-            await apns.container(for: .development) != nil ? .ok : .internalServerError
+            await apns.entry(for: .development) != nil ? .ok : .internalServerError
         }
 
         try await app.testing { client in

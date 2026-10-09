@@ -27,20 +27,20 @@ func testConfiguration(environment: APNSEnvironment = .development) throws -> AP
     APNSClientConfiguration(authenticationMethod: try testAuthenticationMethod(), environment: environment)
 }
 
-/// Runs `test` with a fresh ``APNSContainers``, shutting its clients down afterwards.
-func withContainers(_ test: (APNSContainers) async throws -> Void) async throws {
-    let containers = APNSContainers()
+/// Runs `test` with a fresh ``APNSClients``, shutting its clients down afterwards.
+func withClients(_ test: (APNSClients) async throws -> Void) async throws {
+    let clients = APNSClients()
     do {
-        try await test(containers)
+        try await test(clients)
     } catch {
-        await containers.shutdown()
+        await clients.shutdown()
         throw error
     }
-    await containers.shutdown()
+    await clients.shutdown()
 }
 
-extension APNSContainers.ID {
-    static var custom: APNSContainers.ID {
+extension APNSClients.ID {
+    static var custom: APNSClients.ID {
         .init(string: "custom")
     }
 }

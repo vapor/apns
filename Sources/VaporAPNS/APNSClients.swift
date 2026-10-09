@@ -19,7 +19,7 @@ public typealias APNSGenericClient = APNSClient<JSONDecoder, JSONEncoder>
 /// to the application so the clients are shut down with it:
 ///
 /// ```swift
-/// let apns = APNSContainers()
+/// let apns = APNSClients()
 /// try await apns.configure(.jwt(
 ///     privateKey: try .init(pemRepresentation: apnsKey),
 ///     keyIdentifier: keyIdentifier,
@@ -28,8 +28,8 @@ public typealias APNSGenericClient = APNSClient<JSONDecoder, JSONEncoder>
 /// app.addService(apns)
 /// ```
 ///
-/// Pass the containers to whatever needs to send notifications, such as your route collections.
-public final actor APNSContainers: Service {
+/// Pass the clients to whatever needs to send notifications, such as your route collections.
+public final actor APNSClients: Service {
     public struct ID: Sendable, Hashable, Codable {
         public let string: String
         public init(string: String) {
@@ -37,7 +37,7 @@ public final actor APNSContainers: Service {
         }
     }
 
-    public final class Container: Sendable {
+    public final class Entry: Sendable {
         public let configuration: APNSClientConfiguration
         public let client: APNSGenericClient
 
@@ -47,14 +47,14 @@ public final actor APNSContainers: Service {
         }
     }
 
-    private var containers: [ID: Container]
+    private var entries: [ID: Entry]
     private var defaultID: ID?
     private let logger: Logger
 
     public init() {
-        self.containers = [:]
+        self.entries = [:]
         self.defaultID = nil
-        self.logger = Logger(label: "codes.vapor.apns.containers")
+        self.logger = Logger(label: "codes.vapor.apns")
     }
 
     /// Keeps the clients alive until the application shuts down, then shuts them down.
@@ -64,20 +64,20 @@ public final actor APNSContainers: Service {
     }
 
     public func shutdown() async {
-        for container in self.containers.values {
+        for entry in self.entries.values {
             do {
-                try await container.client.shutdown()
+                try await entry.client.shutdown()
             } catch {
-                // Log the error but continue shutting down other containers
-                logger.warning("Failed to shutdown APNS container", metadata: ["error": "\(error)"])
+                // Log the error but continue shutting down the other clients
+                logger.warning("Failed to shut down APNs client", metadata: ["error": "\(error)"])
             }
         }
-        self.containers.removeAll()
+        self.entries.removeAll()
     }
 }
 
-extension APNSContainers {
-    /// Configure APNs for a given container ID.
+extension APNSClients {
+    /// Configure APNs for a given client ID.
     ///
     /// You must configure at lease one client in order to send notifications to devices. If you plan on supporting both development builds (ie. run from Xcode) and release builds (ie. TestFlight/App Store), you must configure at least two configurations:
     ///
@@ -98,7 +98,7 @@ extension APNSContainers {
     ///     environment: .production
     /// )
     ///
-    /// let apns = APNSContainers()
+    /// let apns = APNSClients()
     /// await apns.use(
     ///     productionConfig,
     ///     responseDecoder: JSONDecoder(),
@@ -187,7 +187,7 @@ extension APNSContainers {
     ///   - responseDecoder: A decoder to use when decoding responses from the APNs server. Example: `JSONDecoder()`
     ///   - requestEncoder: An encoder to use when encoding notifications. Example: `JSONEncoder()`
     ///   - byteBufferAllocator: The allocator to use.
-    ///   - id: The container ID to access the configuration under.
+    ///   - id: The client ID to access the configuration under.
     ///   - isDefault: A flag to specify the configuration as the default when ``client`` is called. The first configuration that doesn't specify `false` is automatically configured as the default.
     public func use(
         _ config: APNSClientConfiguration,
@@ -198,7 +198,7 @@ extension APNSContainers {
         as id: ID,
         isDefault: Bool? = nil
     ) {
-        self.containers[id] = Container(
+        self.entries[id] = Entry(
             configuration: config,
             client: APNSGenericClient(
                 configuration: config,
@@ -218,39 +218,39 @@ extension APNSContainers {
         self.defaultID = id
     }
 
-    public func container(for id: ID? = nil) -> APNSContainers.Container? {
+    public func entry(for id: ID? = nil) -> APNSClients.Entry? {
         guard let id = id ?? self.defaultID else {
             return nil
         }
-        return self.containers[id]
+        return self.entries[id]
     }
 
-    public var container: APNSContainers.Container? {
-        container()
+    public var entry: APNSClients.Entry? {
+        entry()
     }
 
-    /// The client for the default container.
+    /// The default client.
     ///
-    /// - Precondition: A default container has been configured.
+    /// - Precondition: A default client has been configured.
     public var client: APNSGenericClient {
-        guard let container = self.container() else {
-            fatalError("No default APNS container configured.")
+        guard let entry = self.entry() else {
+            fatalError("No default APNs client configured.")
         }
-        return container.client
+        return entry.client
     }
 
-    /// The client for the given container.
+    /// The client for the given ID.
     ///
-    /// - Precondition: A container has been configured under `id`.
+    /// - Precondition: A client has been configured under `id`.
     public func client(_ id: ID) -> APNSGenericClient {
-        guard let container = self.container(for: id) else {
-            fatalError("No APNS container for \(id).")
+        guard let entry = self.entry(for: id) else {
+            fatalError("No APNs client for \(id).")
         }
-        return container.client
+        return entry.client
     }
 }
 
-extension APNSContainers {
+extension APNSClients {
     /// Configure both a production and development APNs environment.
     ///
     /// This convenience method creates two clients available via ``client(_:)`` with ``ID/production`` and ``ID/development`` that make it easy to support both development builds (ie. run from Xcode) and release builds (ie. TestFlight/App Store):
@@ -260,7 +260,7 @@ extension APNSContainers {
     /// guard let apnsKey = Environment.get("APNS_KEY_P8")
     /// else { throw Abort(.serviceUnavailable) }
     ///
-    /// let apns = APNSContainers()
+    /// let apns = APNSClients()
     /// await apns.configure(.jwt(
     ///     privateKey: try .init(pemRepresentation: apnsKey),
     ///     /// The identifier of the key in the developer portal.

@@ -17,7 +17,7 @@ private struct Payload: Codable {}
 
 @Test("Sending through a route")
 func testApplication() async throws {
-    try await withContainers { apns in
+    try await withClients { apns in
         await apns.use(
             try testConfiguration(),
             responseDecoder: JSONDecoder(),
@@ -51,9 +51,9 @@ func testApplication() async throws {
     }
 }
 
-@Test("Containers")
-func testContainers() async throws {
-    try await withContainers { apns in
+@Test("Clients")
+func testClients() async throws {
+    try await withClients { apns in
         await apns.use(
             try testConfiguration(),
             responseDecoder: JSONDecoder(),
@@ -61,16 +61,16 @@ func testContainers() async throws {
             as: .default
         )
 
-        let defaultContainer = await apns.container()
-        #expect(defaultContainer != nil)
+        let defaultEntry = await apns.entry()
+        #expect(defaultEntry != nil)
 
-        let defaultMethodContainer = await apns.container(for: .default)
-        let defaultComputedContainer = await apns.container
-        #expect(defaultContainer === defaultMethodContainer)
-        #expect(defaultContainer === defaultComputedContainer)
+        let defaultMethodEntry = await apns.entry(for: .default)
+        let defaultComputedEntry = await apns.entry
+        #expect(defaultEntry === defaultMethodEntry)
+        #expect(defaultEntry === defaultComputedEntry)
 
         let client = await apns.client
-        #expect(client === defaultContainer?.client)
+        #expect(client === defaultEntry?.client)
 
         await apns.use(
             try testConfiguration(environment: .custom(url: "http://apple.com")),
@@ -79,17 +79,17 @@ func testContainers() async throws {
             as: .custom
         )
 
-        // The first container registered stays the default.
-        let containerPostCustom = await apns.container()
-        #expect(containerPostCustom === defaultContainer)
+        // The first client registered stays the default.
+        let entryPostCustom = await apns.entry()
+        #expect(entryPostCustom === defaultEntry)
         let clientPostCustom = await apns.client
-        #expect(clientPostCustom === defaultContainer?.client)
+        #expect(clientPostCustom === defaultEntry?.client)
     }
 }
 
-@Test("Custom Containers")
-func testCustomContainers() async throws {
-    try await withContainers { apns in
+@Test("Custom Clients")
+func testCustomClients() async throws {
+    try await withClients { apns in
         await apns.use(
             try testConfiguration(),
             responseDecoder: JSONDecoder(),
@@ -106,20 +106,20 @@ func testCustomContainers() async throws {
             isDefault: true
         )
 
-        // The last container registered as default wins.
-        let containerPostCustom = await apns.container()
-        let customContainer = await apns.container(for: .custom)
-        #expect(containerPostCustom != nil)
-        #expect(containerPostCustom === customContainer)
+        // The last client registered as default wins.
+        let entryPostCustom = await apns.entry()
+        let customEntry = await apns.entry(for: .custom)
+        #expect(entryPostCustom != nil)
+        #expect(entryPostCustom === customEntry)
 
         let client = await apns.client
-        #expect(client === customContainer?.client)
+        #expect(client === customEntry?.client)
     }
 }
 
-@Test("Non-Default Containers")
-func testNonDefaultContainers() async throws {
-    try await withContainers { apns in
+@Test("Non-Default Clients")
+func testNonDefaultClients() async throws {
+    try await withClients { apns in
         await apns.use(
             try testConfiguration(),
             responseDecoder: JSONDecoder(),
@@ -135,20 +135,20 @@ func testNonDefaultContainers() async throws {
             as: .custom
         )
 
-        let defaultContainer = await apns.container()
-        let customContainer = await apns.container(for: .custom)
-        #expect(defaultContainer != nil)
-        #expect(customContainer !== defaultContainer)
+        let defaultEntry = await apns.entry()
+        let customEntry = await apns.entry(for: .custom)
+        #expect(defaultEntry != nil)
+        #expect(customEntry !== defaultEntry)
 
         let customClient = await apns.client(.custom)
-        #expect(customClient === customContainer?.client)
-        #expect(customClient !== defaultContainer?.client)
+        #expect(customClient === customEntry?.client)
+        #expect(customClient !== defaultEntry?.client)
     }
 }
 
 @Test("Switching the default")
 func testSwitchingDefault() async throws {
-    try await withContainers { apns in
+    try await withClients { apns in
         await apns.use(
             try testConfiguration(),
             responseDecoder: JSONDecoder(),
@@ -164,8 +164,8 @@ func testSwitchingDefault() async throws {
 
         await apns.default(to: .custom)
 
-        let defaultContainer = await apns.container()
-        let customContainer = await apns.container(for: .custom)
-        #expect(defaultContainer === customContainer)
+        let defaultEntry = await apns.entry()
+        let customEntry = await apns.entry(for: .custom)
+        #expect(defaultEntry === customEntry)
     }
 }

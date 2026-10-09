@@ -26,7 +26,6 @@ let package = Package(
             dependencies: [
                 .product(name: "APNS", package: "apnswift"),
                 .product(name: "APNSCore", package: "apnswift"),
-                .product(name: "Vapor", package: "vapor"),
                 .product(name: "Logging", package: "swift-log"),
                 .product(name: "NIOCore", package: "swift-nio"),
                 .product(name: "NIOPosix", package: "swift-nio"),
